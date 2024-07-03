@@ -78,8 +78,10 @@ std::cout.rdbuf(original_cout_buffer);*/
     int *pointer_tmp;
     cudaMallocManaged(&pointer_tmp, sizeof(int) * 2);
 
-    string s0 = "COCCCOc1cc(C[C@@H](C[C@H](NC(=O)OC(C)(C)C)C(O)CCCC(=O)N2CC3CCC(C3)C2)C(C)C)ccc1OC";
-    string s1 = "O=C(CCCCCCCCc1ccccc1)N2CC3CCC(C3)C2";
+    
+     string s0 = "Clc1ccccc1c2oc3cc(NC(=O)Cn4nnnc4c5ccc(nc5Cl)c6occc6)ccc3n2";
+    string s1 = "O=C(Cn1nnnc1c2ccc(nc2)c3occc3)Nc4ccc5nc(oc5c4)c6ccccc6";
+
 
     clock_t start = clock();
     ROMol result = smiles_mcs(s0, s1 );

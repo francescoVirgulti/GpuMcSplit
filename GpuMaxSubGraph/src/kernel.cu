@@ -502,7 +502,7 @@ int autonomouslySolve(ThreadVar *thread_pool, int queue_size, int m_best_size, P
 
 
 
-vector<pair<int,int>> first_solution(
+void kernel(
                                 const std::vector<std::string>& l0,
                                 const std::vector<std::string>& l1,
                                 vector<queue_elem> Q_filter,
@@ -649,8 +649,7 @@ vector<pair<int,int>> first_solution(
        }
     }
 
-   vector<pair<int,int>> m_tmp;
-    return m_tmp;
+    return ;
 
 }
 

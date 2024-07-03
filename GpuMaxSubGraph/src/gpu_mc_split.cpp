@@ -248,7 +248,8 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
         flag = solve_mcs();
             if(first_bb){
                 filter_queue(Q);
-                first_solution(l0,l1,Q_filter,size_of_label_classes);
+                cout << "\n Q Filter size : " << Q_filter.size() << endl;
+                kernel(l0,l1,Q_filter,size_of_label_classes);
                 return m_best;
             }
         }while(flag);

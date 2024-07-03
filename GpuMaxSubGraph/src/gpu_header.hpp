@@ -20,8 +20,9 @@ struct queue_elem{
 
 
 
-vector<pair<int,int>> first_solution(
+void kernel(
                                 const std::vector<std::string>& l0,
                                 const std::vector<std::string>& l1,
                                 vector<queue_elem> Q_filter,
-                                int size_initial_label_classes ) ;
+                                int size_initial_label_classes
+                                 );

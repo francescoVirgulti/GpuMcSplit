@@ -98,7 +98,7 @@ add_executable(test ${header_files} "${source_path}/test.cu"
         "${source_path}/g2mol.cpp"
         "${source_path}/gpu_mc_split.cpp"
         "${source_path}/pair_vertex.cpp"
-        "${source_path}/first_solution.cu"
+        "${source_path}/kernel.cu"
 )
 set_target_properties(test PROPERTIES
     COMPILE_DEFINITIONS "TESTING"
@@ -125,7 +125,7 @@ add_executable(testFra ${header_files} "${source_path}/testFra.cpp"
         "${source_path}/g2mol.cpp"
         "${source_path}/gpu_mc_split.cpp"
         "${source_path}/pair_vertex.cpp"
-        "${source_path}/first_solution.cu"
+        "${source_path}/kernel.cu"
 )
 set_target_properties(testFra PROPERTIES
     COMPILE_DEFINITIONS "TESTING"
