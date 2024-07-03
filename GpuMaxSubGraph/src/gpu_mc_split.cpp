@@ -9,6 +9,8 @@ std::vector<std::vector<float>> g0;
 std::vector<std::vector<float>> g1;
 std::vector<float> edge_labels;
 vector<pair<int,int>> m_best;
+int max_first_len = 0;
+int max_second_len = 0;
 
     
     int max_depth = 0;
@@ -198,6 +200,53 @@ void filter_queue(vector<queue_elem> Q){
 
 
 
+
+void sortLabels(std::vector<LabelClass>& labels){
+    int index_max;
+    int max = 0;
+    int i = 0;
+    for(LabelClass lc : labels ){
+        if(lc.g.size() > max){
+            max = lc.g.size();
+            index_max = i;
+        }
+        i++;
+    }
+
+    if(max > max_first_len){
+        max_first_len = max;
+    }
+
+    if(index_max != 0){
+        LabelClass tmp = labels[0];
+        labels[0] = labels[index_max];
+        labels[index_max] = tmp;
+    }
+
+
+    index_max = 1;
+    max = 0;
+    for(int i = 1; i < labels.size(); i++){
+        if(labels[i].g.size() > max){
+            max = labels[i].g.size();
+            index_max = i;
+        }
+    }
+
+    if(max > max_second_len){
+        max_second_len = max;
+    }
+
+    if(index_max != 1){
+        LabelClass tmp = labels[1];
+        labels[1] = labels[index_max];
+        labels[index_max] = tmp;
+    }
+
+
+}
+
+
 vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, const std::vector<std::vector<float>>& g11,
                                           const std::vector<std::string>& l0, const std::vector<std::string>& l1,
                                           std::vector<std::vector<int> >& ring_classes){
@@ -249,6 +298,21 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
             if(first_bb){
                 filter_queue(Q);
                 cout << "\n Q Filter size : " << Q_filter.size() << endl;
+                for(int i = 0; i < Q_filter.size(); i++){
+                    sortLabels(Q_filter[i].labels);
+                }
+
+
+                for(int i = 0; i < Q_filter.size(); i++){
+                    cout << i << endl;
+                    for(LabelClass lc : Q_filter[i].labels){
+                        printLabelClass(lc);
+                    }
+                }
+
+                
+
+
                 kernel(l0,l1,Q_filter,size_of_label_classes);
                 return m_best;
             }
