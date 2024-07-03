@@ -302,13 +302,16 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
                     sortLabels(Q_filter[i].labels);
                 }
 
+                cout << "first max size : " << max_first_len << " second max size : " << max_second_len << endl;
 
+            /*
                 for(int i = 0; i < Q_filter.size(); i++){
-                    cout << i << endl;
+                    cout <<"\n" <<i << endl;
                     for(LabelClass lc : Q_filter[i].labels){
                         printLabelClass(lc);
                     }
                 }
+            */
 
                 
 

@@ -22,8 +22,8 @@ int main()
     cudaMallocManaged(&pointer_tmp, sizeof(int) * 2);
 
     
-    string s0 = "Clc1ccccc1c2oc3cc(NC(=O)Cn4nnnc4c5ccc(nc5Cl)c6occc6)ccc3n2";
-    string s1 = "O=C(Cn1nnnc1c2ccc(nc2)c3occc3)Nc4ccc5nc(oc5c4)c6ccccc6";
+    string s0 = "[O-][N+](=O)c1cccc(Nc2nc(c3ccccc3)c4cc(NCCN5C=Cn6nc(cc6C5=O)c7occc7)ccc4n2)c1";
+    string s1 = "O=C1N(CCNc2ccc3nc(Nc4ccccc4)nc(c5ccccc5)c3c2)C=Cn6nc(cc16)c7occc7";
 
 
     clock_t start = clock();
