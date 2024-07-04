@@ -13,6 +13,7 @@
 #include <chrono>  // Include la libreria chrono
 using namespace std;
 
+double malloc_elapsed_seconds;
 
 //struct 
 typedef struct{
@@ -497,7 +498,7 @@ int autonomouslySolve(ThreadVar *thread_pool, int queue_size, int m_best_size, P
         iterazione ++;
     }
 
-    //printf("\niter : q_max_size : %d", max_legth_queue );
+   // printf("\niter : q_max_size : %d", max_legth_queue );
     return m_best_size;
 }
 
@@ -541,6 +542,7 @@ void kernel(
     checkError(0, __LINE__ , cudaMallocManaged((void **) &auto_pool_m_best, (Q_filter.size())  * sizeof(Pair *) ));
     checkError(0, __LINE__ , cudaMallocManaged( &auto_pool_tmp, (Q_filter.size())  * sizeof(ThreadVar ) ));
 
+    int common_queue_element_size = 3;
     
     for(int i = 0; i < (Q_filter.size()); i++) {
         // Esempi di allocazioni, assicurati di gestire gli errori per ciascuna
@@ -590,13 +592,13 @@ void kernel(
             // 5 is an indicative number
 
             for (int k = (2 * size_edge_labels); k < size_initial_label_classes + (2 * size_edge_labels); ++k) {
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].col_ring_size), sizeof(int) * 5));
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].g), sizeof(int) * 5));
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].h), sizeof(int) * 5));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].col_ring_size), sizeof(int) * common_queue_element_size));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].g), sizeof(int) * common_queue_element_size));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].h), sizeof(int) * common_queue_element_size));
 
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].rings_g), sizeof(int *) * 5));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].rings_g), sizeof(int *) * common_queue_element_size));
                 for (int h = 0; h < 5; ++h) {
-                    checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].rings_g[h]), sizeof(int) * max_first_len));
+                    checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[k].rings_g[h]), sizeof(int) * common_queue_element_size));
                 }
             }
 
@@ -607,7 +609,7 @@ void kernel(
     
     for (int f = 0; f <  Q_filter.size() ; f++) {
         int depth = Q_filter[f].m_local.size();
-        int length = (min_mol_size - depth)  ;
+        int length = (min_mol_size - depth) / 2  ;
         length_list.push_back(length);
 
 
@@ -615,7 +617,7 @@ void kernel(
 
         // Allocazione per le strutture dati all'interno di ciascun ThreadVar
         // prova
-        //length = 8;
+        //length = 15;
 
         for (int j = 0; j < length; ++j) {
             // Esempi di allocazioni, assicurati di gestire gli errori per ciascuna
@@ -662,13 +664,13 @@ void kernel(
             }
 
             for (int k = ((2 * size_edge_labels)); k < size_initial_label_classes + (2 * size_edge_labels) ; ++k) {
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].col_ring_size), sizeof(int) * 5));
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].g), sizeof(int) * 5));
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].h), sizeof(int) * 5));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].col_ring_size), sizeof(int) * common_queue_element_size));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].g), sizeof(int) * common_queue_element_size));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].h), sizeof(int) * common_queue_element_size));
 
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].rings_g), sizeof(int *) * 5));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].rings_g), sizeof(int *) * common_queue_element_size));
                 for (int h = 0; h < 5; ++h) {
-                    checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].rings_g[h]), sizeof(int) * max_first_len));
+                    checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[k].rings_g[h]), sizeof(int) * common_queue_element_size));
                 }
             }
         }
@@ -676,6 +678,7 @@ void kernel(
     clock_t end = clock();
      // Calculate elapsed time in seconds
     double elapsed_seconds = (double)(end - start) / CLOCKS_PER_SEC;
+    malloc_elapsed_seconds = elapsed_seconds;
       // Print the elapsed time in seconds
     std::cout << "\nMALLOC Elapsed time: " << elapsed_seconds << " seconds" << std::endl;
 //initialize

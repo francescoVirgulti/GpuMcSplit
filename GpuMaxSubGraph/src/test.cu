@@ -51,6 +51,7 @@ int main()
 
      // Print the elapsed time in seconds
     std::cout << "\nElapsed time: " << elapsed_seconds << " seconds" << std::endl;
+    std::cout << "\nElapsed time [WITHOUT MALLOC]: " << elapsed_seconds - malloc_elapsed_seconds << " seconds" << std::endl;
 
     return 0;
 }

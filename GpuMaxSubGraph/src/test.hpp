@@ -11,7 +11,7 @@
 using namespace std;
 using namespace RDKit;
 
-
+extern double malloc_elapsed_seconds;
 
 std::vector<std::vector<int> > gen_rings_classes(
      std::vector<std::string> l0,

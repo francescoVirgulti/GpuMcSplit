@@ -13,11 +13,16 @@ int max_first_len = 0;
 int max_second_len = 0;
 
     
-    int max_depth = 0;
-    bool first_bb = false;
-    
-    vector<queue_elem> Q;
-    vector<queue_elem> Q_filter;
+int max_depth = 0;
+bool first_bb = false;
+
+
+vector<queue_elem> Q;
+vector<queue_elem> Q_gpu;
+vector<queue_elem> Q_cpu;
+
+
+int LIMIT_DEPTH = 1 ;
 
 void printLabelClass(LabelClass lb) {
     if( true) {
@@ -38,7 +43,7 @@ void printLabelClass(LabelClass lb) {
 vector<pair<int,int>> first_solution(
                             const std::vector<std::string>& l0,
                             const std::vector<std::string>& l1,
-                            vector<queue_elem> Q_filter,
+                            vector<queue_elem> Q_gpu,
                             int size_initial_label_classes );
 
 LabelClass *select_label(std::vector<LabelClass*>& label_classes, int map_size);
@@ -159,6 +164,51 @@ bool solve_mcs() {
 }
 
 
+
+
+bool solve_2_mcs() {
+   
+    queue_elem elem =  Q_cpu.back();  
+
+    Q_cpu.pop_back();   
+
+    vector<LabelClass> lcs = elem.labels;
+
+    std::vector<LabelClass*> label_class_pointers;
+
+    label_class_pointers.reserve(lcs.size());
+    
+    for (LabelClass& item : lcs) {label_class_pointers.push_back(&item);}
+
+    vector<pair<int,int >> m_local = elem.m_local;
+
+    LabelClass *lcc = select_label(label_class_pointers, m_local.size());
+
+    if ( m_local.size() + calc_bound(lcs) <= m_best.size() || ( !lcc && !m_local.empty() )  ){ if( !Q_cpu.empty() ){ return true; } return false;}
+
+    queue_elem qel;
+
+    LabelClass lc = *lcc;
+
+    pair<int,int> m_temp;
+
+    for( int v : lc.g )  {
+        for ( int w : lc.h ) {
+            if ( !matchable(v,w,lc) ) continue;
+            m_temp.first = v;
+            m_temp.second = w;
+            m_local.push_back(m_temp);
+            qel.labels = genNewLabels(v,w,lcs);
+            qel.m_local = m_local;
+            Q_cpu.push_back(qel);
+            if ( m_local.size() > m_best.size() ) m_best = m_local;
+            m_local.pop_back();
+        }
+    }
+    if( !Q_cpu.empty() ){ return true; } return false;
+}
+
+
 int calcSize(vector<LabelClass> lcs) {
     int result=0;
     for( LabelClass lc : lcs) {
@@ -191,7 +241,8 @@ void filter_queue(vector<queue_elem> Q){
         if ( m_local.size() + calc_bound(lcs) <= m_best.size() || ( !lcc && !m_local.empty() )  ){
             
         }else{
-            Q_filter.push_back(elem);
+            if(m_local.size() <= LIMIT_DEPTH ) Q_gpu.push_back(elem);
+            else Q_cpu.push_back(elem);
         }
     
 
@@ -297,26 +348,30 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
         flag = solve_mcs();
             if(first_bb){
                 filter_queue(Q);
-                cout << "\n Q Filter size : " << Q_filter.size() << endl;
-                for(int i = 0; i < Q_filter.size(); i++){
-                    sortLabels(Q_filter[i].labels);
+                cout << "\n Q_gpu size : " << Q_gpu.size() << endl;
+                for(int i = 0; i < Q_gpu.size(); i++){
+                    sortLabels(Q_gpu[i].labels);
                 }
-
-                cout << "first max size : " << max_first_len << " second max size : " << max_second_len << endl;
+                cout << "max_first_len : " << max_first_len << " max_second_len : " << max_second_len << endl;
 
             /*
-                for(int i = 0; i < Q_filter.size(); i++){
+                for(int i = 0; i < Q_gpu.size(); i++){
                     cout <<"\n" <<i << endl;
-                    for(LabelClass lc : Q_filter[i].labels){
+                    for(LabelClass lc : Q_gpu[i].labels){
                         printLabelClass(lc);
                     }
                 }
             */
 
+                kernel(l0,l1,Q_gpu,size_of_label_classes);
+
+                cout << "\n Q_cpu size : " << Q_cpu.size() << endl;
+                iterazione = 0;
+                do
+                {
+                    flag = solve_2_mcs();
+                } while (flag);
                 
-
-
-                kernel(l0,l1,Q_filter,size_of_label_classes);
                 return m_best;
             }
         }while(flag);
