@@ -7,6 +7,9 @@
 
 std::vector<std::vector<float>> g0;
 std::vector<std::vector<float>> g1;
+std::vector<std::string> l0;
+std::vector<std::string> l1;
+int size_initial_label_classes ;
 std::vector<float> edge_labels;
 vector<pair<int,int>> m_best;
 int max_first_len = 0;
@@ -22,7 +25,7 @@ vector<queue_elem> Q_gpu;
 vector<queue_elem> Q_cpu;
 
 
-int LIMIT_DEPTH = 1 ;
+int LIMIT_DEPTH = 4 ;
 
 void printLabelClass(LabelClass lb) {
     if( true) {
@@ -38,6 +41,66 @@ void printLabelClass(LabelClass lb) {
         cout<< lb.label << " ] "<<endl;
     }
 }
+
+
+
+void sortLabels(std::vector<LabelClass>& labels){
+    int index_max = 0;
+    int max = 0;
+    int i = 0;
+    
+    for(LabelClass lc : labels ){
+        if(lc.g.size() > max){
+            max = lc.g.size();
+            index_max = i;
+        }
+        i++;
+    }
+
+
+    if(index_max != 0){
+        LabelClass tmp = labels[0];
+        labels[0] = labels[index_max];
+        labels[index_max] = tmp;
+    }
+
+
+    index_max = 1;
+    max = 0;
+    for(int i = 1; i < labels.size(); i++){
+        if(labels[i].g.size() > max){
+            max = labels[i].g.size();
+            index_max = i;
+        }
+    }
+
+    if(index_max != 1){
+        LabelClass tmp = labels[1];
+        labels[1] = labels[index_max];
+        labels[index_max] = tmp;
+    }
+
+
+}
+
+void setMaxLength(std::vector<LabelClass>& labels){
+    max_first_len = 0;
+    max_second_len = 0;
+
+    for(LabelClass lb : labels)
+    {
+        if(lb.g.size() > max_first_len) max_first_len = lb.g.size();
+    }
+
+    for(LabelClass lb : labels)
+    {
+        if( lb.g.size() == max_first_len) continue;
+        if(lb.g.size() > max_second_len) max_second_len = lb.g.size();
+    }
+
+    
+}
+
 
 
 vector<pair<int,int>> first_solution(
@@ -133,8 +196,7 @@ bool solve_mcs() {
         first_bb = true; 
         return false;
     }
-    
-    
+
 
 
     LabelClass *lcc = select_label(label_class_pointers, m_local.size());
@@ -157,13 +219,25 @@ bool solve_mcs() {
             qel.m_local = m_local;
             Q.push_back(qel);
             if ( m_local.size() > m_best.size() ) m_best = m_local;
+            
+            
+            if(m_local.size() <= LIMIT_DEPTH ){ 
+                if(Q.size() == 16) {
+                    for(int i = 0; i < Q.size(); i++){
+                        sortLabels(Q[i].labels);
+                    }
+                    cout << "\n Q_gpu size : " << Q.size() << endl;
+                    kernel(Q);
+                    Q.clear();
+                } 
+            }
+            else Q_cpu.push_back(elem);
+
             m_local.pop_back();
         }
     }
     if( !Q.empty() ){ return true; } return false;
 }
-
-
 
 
 bool solve_2_mcs() {
@@ -240,7 +314,9 @@ void filter_queue(vector<queue_elem> Q){
         if ( m_local.size() + calc_bound(lcs) <= m_best.size() || ( !lcc && !m_local.empty() )  ){
             
         }else{
-            if(m_local.size() <= LIMIT_DEPTH ) Q_gpu.push_back(elem);
+            if(m_local.size() <= LIMIT_DEPTH ){ 
+                Q_gpu.push_back(elem); 
+            }
             else Q_cpu.push_back(elem);
         }
     
@@ -250,67 +326,24 @@ void filter_queue(vector<queue_elem> Q){
 
 
 
-
-void sortLabels(std::vector<LabelClass>& labels){
-    int index_max;
-    int max = 0;
-    int i = 0;
-    for(LabelClass lc : labels ){
-        if(lc.g.size() > max){
-            max = lc.g.size();
-            index_max = i;
-        }
-        i++;
-    }
-
-    if(max > max_first_len){
-        max_first_len = max;
-    }
-
-    if(index_max != 0){
-        LabelClass tmp = labels[0];
-        labels[0] = labels[index_max];
-        labels[index_max] = tmp;
-    }
-
-
-    index_max = 1;
-    max = 0;
-    for(int i = 1; i < labels.size(); i++){
-        if(labels[i].g.size() > max){
-            max = labels[i].g.size();
-            index_max = i;
-        }
-    }
-
-    if(max > max_second_len){
-        max_second_len = max;
-    }
-
-    if(index_max != 1){
-        LabelClass tmp = labels[1];
-        labels[1] = labels[index_max];
-        labels[index_max] = tmp;
-    }
-
-
-}
-
-
 vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, const std::vector<std::vector<float>>& g11,
-                                          const std::vector<std::string>& l0, const std::vector<std::string>& l1,
+                                          const std::vector<std::string>& l00, const std::vector<std::string>& l11,
                                           std::vector<std::vector<int> >& ring_classes){
 
     int depth = 1;
     g0 = g00;
     g1 = g11;
+    l0 = l00;
+    l1 = l11;
+
     edge_labels = gen_bond_labels(g0, g1);
     int min = std::min(l0.size(), l1.size());
     std::vector<LabelClass> initial_label_classes = gen_initial_labels(l0, l1, ring_classes);
-    int size_of_label_classes = calcSize(initial_label_classes);
+    size_initial_label_classes = calcSize(initial_label_classes);
+    setMaxLength(initial_label_classes);
     Q.reserve(32*32);
     for(auto & x : Q) {
-        x.labels.reserve(size_of_label_classes);
+        x.labels.reserve(size_initial_label_classes);
         x.m_local.reserve(min);
     }
 
@@ -346,15 +379,36 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
     do{
         flag = solve_mcs();
             if(first_bb){
+                cout << "\nm_best_size before kernel : " << m_best.size() << endl;
                 filter_queue(Q);
-                
-                for(int i = 0; i < Q_gpu.size(); i++){
-                    sortLabels(Q_gpu[i].labels);
-                }
-                cout << "\nAFTER LABELS SORT [only first and second item per labels] : max_first_len : " << max_first_len << " max_second_len : " << max_second_len << endl;
 
-                cout << "\n Q_gpu size : " << Q_gpu.size() << endl;
-                if(Q_gpu.size() > 0) kernel(l0,l1,Q_gpu,size_of_label_classes);
+                int num_iter = Q_gpu.size() / 16;
+                int remaining = Q_gpu.size() % 16;
+
+                vector<queue_elem> Q_tmp;
+
+                for(int j = 0; j < num_iter; j++){
+                    for(int i = j * 16; i < 16 * (j + 1); i++){
+                        sortLabels(Q_gpu[i].labels);
+                        Q_tmp.push_back(Q_gpu[i]);
+                    } 
+                    cout << "\n-------> Kernel called with Q_gpu size : " << Q_tmp.size() << endl;
+                    kernel(Q_tmp);
+                    Q_tmp.clear();
+                }
+
+                if(remaining > 0){
+                    for(int i = num_iter * 16 ; i < (num_iter * 16) + remaining; i++){
+                        sortLabels(Q_gpu[i].labels);
+                        Q_tmp.push_back(Q_gpu[i]);
+                    } 
+                    cout << "\n-------->  Kernel called with Q_gpu size : " << Q_tmp.size() << endl;
+                    kernel(Q_tmp);
+                    Q_tmp.clear();
+                }
+
+                
+                cout << "\nm_best_size after kernel : " << m_best.size() << endl;
 
                 cout << "\n Q_cpu size : " << Q_cpu.size() << endl;
                 iterazione = 0;
@@ -364,9 +418,23 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
                         flag = solve_2_mcs();
                     } while (flag);
                 }
-                
                 return m_best;
             }
+
+
+            if( flag==false && first_bb == false ) {
+                cout << "\n Q_cpu size : " << Q_cpu.size() << endl;
+                iterazione = 0;
+                if(Q_cpu.size() > 0 ){
+                    do
+                    {
+                        flag = solve_2_mcs();
+                    } while (flag);
+                }
+                return m_best;
+            }
+
+
         }while(flag);
     return m_best;
 }
