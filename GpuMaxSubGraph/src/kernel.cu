@@ -507,39 +507,47 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 }
 
 
-void malloc( vector<queue_elem> Q_filter, int min_mol_size){
+void malloc(){
+    int Q_GPU_size = 16;
+    int min_mol_size;
+
+    if(max_l0_size > max_l1_size) min_mol_size = max_l1_size;
+    else  min_mol_size = max_l0_size;
+
+    cout << "2:min_mol_size : " << min_mol_size <<endl;
+
     clock_t start = clock();                          
     //cuda Mallocs
-    cudaMallocManaged(&m_best_solution , sizeof(Pair)* l1.size());
+    cudaMallocManaged(&m_best_solution , sizeof(Pair)* max_l1_size);
     //cuda malloc edge labels
-    checkError(0, __LINE__ , cudaMallocManaged(&gpu_edge_labels, sizeof(float) * edge_labels.size()));
+    checkError(0, __LINE__ , cudaMallocManaged(&gpu_edge_labels, sizeof(float) * edge_label_size));
     //cuda malloc adj matrix mol 0
-    checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g0, l0.size() * sizeof(float *)));
-    for (int i = 0; i < l0.size(); ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g0[i]), l0.size() * sizeof(float))); }
+    checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g0, max_l0_size * sizeof(float *)));
+    for (int i = 0; i < max_l0_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g0[i]), max_l0_size * sizeof(float))); }
     //cuda malloc adj matrix mol 1
-    checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g1, l1.size() * sizeof(float *)));
-    for (int i = 0; i < l1.size(); ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g1[i]), l1.size() * sizeof(float))); }
+    checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g1, max_l1_size * sizeof(float *)));
+    for (int i = 0; i < max_l1_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g1[i]), max_l1_size * sizeof(float))); }
 
 
     //lista di code per ogni singolo thread
-    checkError(0, __LINE__ , cudaMallocManaged((void **) &thread_pool_list, (Q_filter.size())  * sizeof(ThreadVar *) ));
-    checkError(0, __LINE__ , cudaMallocManaged(&auto_pool_size, (Q_filter.size()) * sizeof(int *)));
-    checkError(0, __LINE__ , cudaMallocManaged(&auto_pool_len_m_best, (Q_filter.size()) * sizeof(int *)));
-    checkError(0, __LINE__ , cudaMallocManaged((void **) &auto_pool_m_best, (Q_filter.size())  * sizeof(Pair *) ));
-    checkError(0, __LINE__ , cudaMallocManaged( &auto_pool_tmp, (Q_filter.size())  * sizeof(ThreadVar ) ));
+    checkError(0, __LINE__ , cudaMallocManaged((void **) &thread_pool_list, (Q_GPU_size)  * sizeof(ThreadVar *) ));
+    checkError(0, __LINE__ , cudaMallocManaged(&auto_pool_size, (Q_GPU_size) * sizeof(int *)));
+    checkError(0, __LINE__ , cudaMallocManaged(&auto_pool_len_m_best, (Q_GPU_size) * sizeof(int *)));
+    checkError(0, __LINE__ , cudaMallocManaged((void **) &auto_pool_m_best, (Q_GPU_size)  * sizeof(Pair *) ));
+    checkError(0, __LINE__ , cudaMallocManaged( &auto_pool_tmp, (Q_GPU_size)  * sizeof(ThreadVar ) ));
 
     int common_queue_element_size = 3;
     
-    for(int i = 0; i < (Q_filter.size()); i++) {
+    for(int i = 0; i < (Q_GPU_size); i++) {
         // Esempi di allocazioni, assicurati di gestire gli errori per ciascuna
             checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.col_ring_size), sizeof(int) * min_mol_size));
-            checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.g), sizeof(int) * max_first_len));
-            checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.h), sizeof(int) * max_first_len));
+            checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.g), sizeof(int) * max_first_len_initialized));
+            checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.h), sizeof(int) * max_first_len_initialized));
             
             // Allocazione per array di puntatori e iterazione su di essi
-            checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.rings_g), sizeof(int *) * max_first_len));
-            for (int h = 0; h < l0.size(); ++h) {
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.rings_g[h]), sizeof(int) * max_first_len));
+            checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.rings_g), sizeof(int *) * max_first_len_initialized));
+            for (int h = 0; h < max_l0_size; ++h) {
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].single_label.rings_g[h]), sizeof(int) * max_first_len_initialized));
             }
 
             // Allocazioni successive
@@ -552,25 +560,25 @@ void malloc( vector<queue_elem> Q_filter, int min_mol_size){
 
             //first + edge_labels
             for(int s = 0; s < size_edge_labels ; s++){
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].col_ring_size), sizeof(int) * max_first_len));
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].g), sizeof(int) * max_first_len));
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].h), sizeof(int) * max_first_len));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].col_ring_size), sizeof(int) * max_first_len_initialized));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].g), sizeof(int) * max_first_len_initialized));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].h), sizeof(int) * max_first_len_initialized));
 
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g), sizeof(int *) * max_first_len));
-                for (int h = 0; h < max_first_len ; ++h) {
-                    checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g[h]), sizeof(int) * max_first_len));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g), sizeof(int *) * max_first_len_initialized));
+                for (int h = 0; h < max_first_len_initialized ; ++h) {
+                    checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g[h]), sizeof(int) * max_first_len_initialized));
                 }
             }
 
             //second + edge_labels
             for(int s = size_edge_labels; s < (2 * size_edge_labels); s++ ){
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].col_ring_size), sizeof(int) * max_second_len));
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].g), sizeof(int) * max_second_len));
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].h), sizeof(int) * max_second_len));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].col_ring_size), sizeof(int) * max_first_len_initialized));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].g), sizeof(int) * max_first_len_initialized));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].h), sizeof(int) * max_first_len_initialized));
 
-                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g), sizeof(int *) * max_second_len));
-                for (int h = 0; h < max_second_len ; ++h) {
-                    checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g[h]), sizeof(int) * max_second_len));
+                checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g), sizeof(int *) * max_first_len_initialized));
+                for (int h = 0; h < max_first_len_initialized ; ++h) {
+                    checkError(i, __LINE__, cudaMallocManaged(&(auto_pool_tmp[i].labels[s].rings_g[h]), sizeof(int) * max_first_len_initialized));
                 }
             }
 
@@ -593,9 +601,8 @@ void malloc( vector<queue_elem> Q_filter, int min_mol_size){
 
     bool flag = false;
     
-    for (int f = 0; f <  Q_filter.size() ; f++) {
-        int depth = Q_filter[f].m_local.size();
-        int length = (min_mol_size - depth) / 2  ;
+    for (int f = 0; f <  Q_GPU_size ; f++) {
+        int length = (min_mol_size) / 2  ;
         length_list.push_back(length);
 
 
@@ -607,14 +614,14 @@ void malloc( vector<queue_elem> Q_filter, int min_mol_size){
 
         for (int j = 0; j < length; ++j) {
             // Esempi di allocazioni, assicurati di gestire gli errori per ciascuna
-            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.col_ring_size), sizeof(int) * max_first_len));
-            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.g), sizeof(int) * max_first_len));
-            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.h), sizeof(int) * max_first_len));
+            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.col_ring_size), sizeof(int) * max_first_len_initialized));
+            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.g), sizeof(int) * max_first_len_initialized));
+            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.h), sizeof(int) * max_first_len_initialized));
             
             // Allocazione per array di puntatori e iterazione su di essi
-            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.rings_g), sizeof(int *) * max_first_len));
-            for (int h = 0; h < max_first_len; ++h) {
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.rings_g[h]), sizeof(int) * max_first_len));
+            checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.rings_g), sizeof(int *) * max_first_len_initialized));
+            for (int h = 0; h < max_first_len_initialized; ++h) {
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].single_label.rings_g[h]), sizeof(int) * max_first_len_initialized));
             }
 
             // Allocazioni successive
@@ -627,25 +634,25 @@ void malloc( vector<queue_elem> Q_filter, int min_mol_size){
             
             //first + edge_label
             for(int s = 0; s < size_edge_labels ; s++){
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].col_ring_size), sizeof(int) * max_first_len));
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].g), sizeof(int) * max_first_len));
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].h), sizeof(int) * max_first_len));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].col_ring_size), sizeof(int) * max_first_len_initialized));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].g), sizeof(int) * max_first_len_initialized));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].h), sizeof(int) * max_first_len_initialized));
 
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g), sizeof(int *) * max_first_len));
-                for (int h = 0; h < max_first_len; ++h) {
-                    checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g[h]), sizeof(int) * max_first_len));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g), sizeof(int *) * max_first_len_initialized));
+                for (int h = 0; h < max_first_len_initialized; ++h) {
+                    checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g[h]), sizeof(int) * max_first_len_initialized));
                 }
             }
 
             //second + edge_labels
             for( int s = size_edge_labels ; s < (2 * size_edge_labels); s++){
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].col_ring_size), sizeof(int) * max_second_len));
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].g), sizeof(int) * max_second_len));
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].h), sizeof(int) * max_second_len));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].col_ring_size), sizeof(int) * max_first_len_initialized));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].g), sizeof(int) * max_first_len_initialized));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].h), sizeof(int) * max_first_len_initialized));
 
-                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g), sizeof(int *) * max_second_len));
-                for (int h = 0; h < max_second_len; ++h) {
-                    checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g[h]), sizeof(int) * max_second_len));
+                checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g), sizeof(int *) * max_first_len_initialized));
+                for (int h = 0; h < max_first_len_initialized; ++h) {
+                    checkError(f, __LINE__, cudaMallocManaged((void **)&(thread_pool_list[f][j].labels[s].rings_g[h]), sizeof(int) * max_first_len_initialized));
                 }
             }
 
@@ -679,11 +686,12 @@ void kernel( vector<queue_elem> Q_filter  ) {
     printf("\nmin_mol_size : %d", min_mol_size);
     printf("\nsize_initial_label_classes : %d", size_initial_label_classes);
     cout << "\nfirst max size : " << max_first_len << " second max size : " << max_second_len << endl;
+        cout << "\n2: first max size : " << max_first_len_initialized  << endl;
     size_edge_labels = edge_labels.size();
     cout << "\nsize_edge_labels : " << size_edge_labels << endl ;
 
     if(! malloc_done){
-        malloc(Q_filter, min_mol_size);
+        malloc();
         malloc_done = true;
     }
     

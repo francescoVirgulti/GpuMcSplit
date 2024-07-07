@@ -52,7 +52,7 @@ set(header_path "${CMAKE_CURRENT_SOURCE_DIR}/src")
 list(APPEND header_files
   "${header_path}/main.hpp"
   "${header_path}/test.hpp"
-  "${header_path}/testFra.hpp"
+
   "${header_path}/gpu_header.hpp"
 )
 
@@ -99,6 +99,7 @@ add_executable(test ${header_files} "${source_path}/test.cu"
         "${source_path}/gpu_mc_split.cpp"
         "${source_path}/pair_vertex.cpp"
         "${source_path}/kernel.cu"
+        "${source_path}/initialized.cpp"
 )
 set_target_properties(test PROPERTIES
     COMPILE_DEFINITIONS "TESTING"
@@ -107,32 +108,7 @@ set_target_properties(test PROPERTIES
         CXX_EXTENSIONS OFF
 )
 
-add_executable(testFra ${header_files} "${source_path}/testFra.cpp"
-        "${source_path}/gen_bond_labels.cpp"
-        "${source_path}/gen_rotations.cpp"
-        "${source_path}/select_vertex.cpp"
-        "${source_path}/hood.cpp"
-        "${source_path}/Label.cpp"
-        "${source_path}/smiles_mcs.cpp"
-        "${source_path}/calc_bound.cpp"
-        "${source_path}/select_label.cpp"
-        "${source_path}/gen_initial_labels.cpp"
-        "${source_path}/gen_ring_classes.cpp"
-        "${source_path}/gen_rotations.cpp"
-        "${source_path}/search_mcs.cpp"
-        "${source_path}/mol_mcs.cpp"
-        "${source_path}/mc_split.cpp"
-        "${source_path}/g2mol.cpp"
-        "${source_path}/gpu_mc_split.cpp"
-        "${source_path}/pair_vertex.cpp"
-        "${source_path}/kernel.cu"
-)
-set_target_properties(testFra PROPERTIES
-    COMPILE_DEFINITIONS "TESTING"
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS OFF
-)
+
 
 # enable link-time optimizations
 include(CheckIPOSupported)
@@ -182,17 +158,7 @@ target_link_libraries(test PUBLIC
         -lRDKitSubstructMatch
 )
 
-#modificato togliendo target_ prima di link in ogni punto
 
-include_directories(testFra PUBLIC "${RDKIT_INSTALL_PREFIX}/include/rdkit")
-target_link_directories(testFra PUBLIC "${RDKIT_INSTALL_PREFIX}/lib")
-target_link_directories(testFra PUBLIC "${RDKIT_INSTALL_PREFIX}/lib64")
-target_link_libraries(testFra PUBLIC
-        -lRDKitFileParsers
-        -lRDKitGraphMol
-        -lRDKitRDGeneral
-        -lRDKitSmilesParse
-)
 
 message(STATUS "RDKit Include Directories: ${RDKit_INCLUDE_DIRS}")
 message(STATUS "RDKit Library Directories: ${RDKit_LIBRARY_DIRS}")

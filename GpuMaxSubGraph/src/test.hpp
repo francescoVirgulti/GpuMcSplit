@@ -12,6 +12,13 @@ using namespace std;
 using namespace RDKit;
 
 extern double malloc_elapsed_seconds;
+extern int max_l0_size ;
+extern int max_l1_size ; 
+extern int max_first_len_initialized ;
+
+extern int edge_label_size;
+extern int max_initial_label_size ;
+extern bool state_initialized;
 
 std::vector<std::vector<int> > gen_rings_classes(
      std::vector<std::string> l0,
@@ -57,3 +64,4 @@ RDKit::ROMol g2mol( std::vector<std::string>& labels,  std::vector<std::vector<f
 
 ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match=1, int ring_match=1, int return_map=0) ;
 
+void initialized(const std::vector<std::string>& l00 ,const std::vector<std::string>& l11 , std::vector<LabelClass> initial_label_classes);

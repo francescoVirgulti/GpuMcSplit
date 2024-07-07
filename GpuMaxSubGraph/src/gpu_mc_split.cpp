@@ -83,31 +83,10 @@ void sortLabels(std::vector<LabelClass>& labels){
 
 }
 
-void setMaxLength(std::vector<LabelClass>& labels){
-    max_first_len = 0;
-    max_second_len = 0;
-
-    for(LabelClass lb : labels)
-    {
-        if(lb.g.size() > max_first_len) max_first_len = lb.g.size();
-    }
-
-    for(LabelClass lb : labels)
-    {
-        if( lb.g.size() == max_first_len) continue;
-        if(lb.g.size() > max_second_len) max_second_len = lb.g.size();
-    }
-
-    
-}
 
 
 
-vector<pair<int,int>> first_solution(
-                            const std::vector<std::string>& l0,
-                            const std::vector<std::string>& l1,
-                            vector<queue_elem> Q_gpu,
-                            int size_initial_label_classes );
+
 
 LabelClass *select_label(std::vector<LabelClass*>& label_classes, int map_size);
 
@@ -339,13 +318,24 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
     edge_labels = gen_bond_labels(g0, g1);
     int min = std::min(l0.size(), l1.size());
     std::vector<LabelClass> initial_label_classes = gen_initial_labels(l0, l1, ring_classes);
-    size_initial_label_classes = calcSize(initial_label_classes);
-    setMaxLength(initial_label_classes);
+
+    if(state_initialized){
+        initialized(l00,l11,initial_label_classes);
+        vector<pair<int,int>> null_map; 
+        return null_map;
+    } 
+
+
+    size_initial_label_classes = initial_label_classes.size();
+    
     Q.reserve(32*32);
     for(auto & x : Q) {
         x.labels.reserve(size_initial_label_classes);
         x.m_local.reserve(min);
     }
+
+ 
+
 
     vector<pair<int,int>> m_local={{}};
     queue_elem elem;

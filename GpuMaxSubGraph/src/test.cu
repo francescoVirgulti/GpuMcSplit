@@ -13,6 +13,15 @@
 using namespace std;
 using namespace RDKit;
 
+int max_l0_size = 0;
+int max_l1_size = 0; 
+int max_first_len_initialized = 0;
+
+int edge_label_size = 4;
+int max_initial_label_size = 0;
+bool state_initialized = true;
+
+
 
 
 int main()
@@ -22,12 +31,13 @@ int main()
     cudaMallocManaged(&pointer_tmp, sizeof(int) * 2);
 
     
-    string s0 = "Fc1cc(NCCN2C=Cn3nc(cc3C2=O)c4occc4)ccc1C(=O)CC5CCC5";
-    string s1 = "O=C(CC1CCC1)c2ccc(NCCN3C=Cn4nc(cc4C3=O)c5occc5)cc2";
-
+  string s0 = "CC(C)[C@@H]1CC[C@@H](C)C[C@H]1OC(=O)c2ccccc2c3c(C)cccc3CN(C)C4CCCCC4";
+    string s1 = "O=C(OC1CCCCC1)c2ccccc2c3ccccc3CNC4CCCCC4";
+ ROMol result = smiles_mcs(s0, s1 );
+ state_initialized = false;
 
     clock_t start = clock();
-    ROMol result = smiles_mcs(s0, s1 );
+     result = smiles_mcs(s0, s1 );
     clock_t end = clock();
 
     
