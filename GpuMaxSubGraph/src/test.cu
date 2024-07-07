@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include "test.hpp"
+#include "cuda_header.h"
 #include <ctime>
 #include <chrono>  // Include la libreria chrono
 
@@ -21,6 +22,16 @@ int edge_label_size = 4;
 int max_initial_label_size = 0;
 bool state_initialized = true;
 
+
+//auto is for autonomous
+ThreadVar **thread_pool_list;
+
+int *auto_pool_size;
+Pair **auto_pool_m_best;
+int *auto_pool_len_m_best;
+ThreadVar *auto_pool_tmp;
+
+vector<int> length_list;
 
 
 
@@ -39,7 +50,7 @@ int main()
     clock_t start = clock();
      result = smiles_mcs(s0, s1 );
     clock_t end = clock();
-
+    
     
     // Calculate elapsed time in seconds
     double elapsed_seconds = (double)(end - start) / CLOCKS_PER_SEC;

@@ -3,7 +3,7 @@
 //
 
 #include "gpu_header.hpp"
-
+#include "cuda_header.h"
 #include <vector>
 #include <string.h>
 #include <string>
@@ -21,29 +21,10 @@ Pair *m_best_solution;
 
 
 
-//auto is for autonomous
-ThreadVar **thread_pool_list;
-
-int *auto_pool_size;
-Pair **auto_pool_m_best;
-int *auto_pool_len_m_best;
-ThreadVar *auto_pool_tmp;
-
-vector<int> length_list;
 
 
 
-__device__ __managed__ float *gpu_edge_labels;
-__device__ __managed__ int size_edge_labels;
 
-
-__device__ __managed__ float **gpu_g0;
-__device__ __managed__ int size_gpu_g0_row;
-__device__ __managed__ int size_gpu_g0_col;
-
-__device__ __managed__ float **gpu_g1;
-__device__ __managed__ int size_gpu_g1_row;
-__device__ __managed__ int size_gpu_g1_col;
 
 
 bool malloc_done = false;
