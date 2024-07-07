@@ -489,6 +489,7 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 
 
 void malloc(){
+    size_edge_labels = edge_label_size;
     int Q_GPU_size = 16;
     int min_mol_size;
 
@@ -501,7 +502,7 @@ void malloc(){
     //cuda Mallocs
     cudaMallocManaged(&m_best_solution , sizeof(Pair)* max_l1_size);
     //cuda malloc edge labels
-    checkError(0, __LINE__ , cudaMallocManaged(&gpu_edge_labels, sizeof(float) * edge_label_size));
+    checkError(0, __LINE__ , cudaMallocManaged(&gpu_edge_labels, sizeof(float) * size_edge_labels));
     //cuda malloc adj matrix mol 0
     checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g0, max_l0_size * sizeof(float *)));
     for (int i = 0; i < max_l0_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g0[i]), max_l0_size * sizeof(float))); }
@@ -667,9 +668,8 @@ void kernel( vector<queue_elem> Q_filter  ) {
     printf("\nmin_mol_size : %d", min_mol_size);
     printf("\nmax_initial_label_size : %d", max_initial_label_size);
     cout << "\nfirst max size : " << max_first_len << " second max size : " << max_second_len << endl;
-        cout << "\n2: first max size : " << max_first_len_initialized  << endl;
-    size_edge_labels = edge_labels.size();
-    cout << "\nsize_edge_labels : " << size_edge_labels << endl ;
+    cout << "\n2: first max size : " << max_first_len_initialized  << endl;
+    cout << "\edge_label_size : " << edge_label_size << endl ;
 
     if(! malloc_done){
         malloc();
