@@ -17,10 +17,13 @@ double malloc_elapsed_seconds;
 
 
 
-Pair *m_best_solution;
 
 
-
+void pointer_initialized(){
+    gpu_edge_labels = main_gpu_edge_labels;
+    gpu_g0 = main_gpu_g0;
+    gpu_g1 = main_gpu_g1;
+}
 
 
 
@@ -338,12 +341,6 @@ __device__ void device_select_vertex(int *result, int *result_pos, int *vtx_set,
 
 
 
-void checkError(int iterazione, int line, cudaError_t r) {
-    if (r != cudaSuccess) {
-        printf("CUDA error on line %d - iterazione %d : %s\n", line, iterazione,  cudaGetErrorString(r));
-        exit(0);
-    }
-}
 
 //copy var1 in var2
 __device__ void copy_single_ThreadVar(ThreadVar *var2, ThreadVar var1){
@@ -416,7 +413,7 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
     copy_single_ThreadVar(tmp , thread_pool[0] );
 
   
-    printf("\nautonomouslySolve globalIdx :  %d \nlabels_size : %d", globalIdx, tmp -> labels_size);  
+//   printf("\nautonomouslySolve globalIdx :  %d \nlabels_size : %d", globalIdx, tmp -> labels_size);  
    //print_labels(tmp->labels, tmp->labels_size);
 
     while(queue_size > 0) {
@@ -488,27 +485,37 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 }
 
 
+
+
+void checkError(int iterazione, int line, cudaError_t r) {
+    if (r != cudaSuccess) {
+        printf("CUDA error on line %d - iterazione %d : %s\n", line, iterazione,  cudaGetErrorString(r));
+        exit(0);
+    }
+}
+
 void malloc(){
     size_edge_labels = edge_label_size;
+
     int Q_GPU_size = 16;
     int min_mol_size;
 
     if(max_l0_size > max_l1_size) min_mol_size = max_l1_size;
     else  min_mol_size = max_l0_size;
 
-    cout << "2:min_mol_size : " << min_mol_size <<endl;
+    cout << "min_mol_size : " << min_mol_size <<endl;
 
     clock_t start = clock();                          
     //cuda Mallocs
     cudaMallocManaged(&m_best_solution , sizeof(Pair)* max_l1_size);
     //cuda malloc edge labels
-    checkError(0, __LINE__ , cudaMallocManaged(&gpu_edge_labels, sizeof(float) * size_edge_labels));
+    checkError(0, __LINE__ , cudaMallocManaged(&main_gpu_edge_labels, sizeof(float) * size_edge_labels));
     //cuda malloc adj matrix mol 0
-    checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g0, max_l0_size * sizeof(float *)));
-    for (int i = 0; i < max_l0_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g0[i]), max_l0_size * sizeof(float))); }
+    checkError(0, __LINE__ , cudaMallocManaged((void **) &main_gpu_g0, max_l0_size * sizeof(float *)));
+    for (int i = 0; i < max_l0_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(main_gpu_g0[i]), max_l0_size * sizeof(float))); }
     //cuda malloc adj matrix mol 1
-    checkError(0, __LINE__ , cudaMallocManaged((void **) &gpu_g1, max_l1_size * sizeof(float *)));
-    for (int i = 0; i < max_l1_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(gpu_g1[i]), max_l1_size * sizeof(float))); }
+    checkError(0, __LINE__ , cudaMallocManaged((void **) &main_gpu_g1, max_l1_size * sizeof(float *)));
+    for (int i = 0; i < max_l1_size; ++i) { checkError(0, __LINE__ , cudaMallocManaged((void **) &(main_gpu_g1[i]), max_l1_size * sizeof(float))); }
 
 
     //lista di code per ogni singolo thread
@@ -661,25 +668,21 @@ void malloc(){
 
 
 
+
+
+
 void kernel( vector<queue_elem> Q_filter  ) {
 
-    int min_mol_size = std::min(l0.size(), l1.size());
 
-    printf("\nmin_mol_size : %d", min_mol_size);
-    printf("\nmax_initial_label_size : %d", max_initial_label_size);
-    cout << "\nfirst max size : " << max_first_len << " second max size : " << max_second_len << endl;
-    cout << "\n2: first max size : " << max_first_len_initialized  << endl;
-    cout << "\edge_label_size : " << edge_label_size << endl ;
 
-    if(! malloc_done){
-        malloc();
-        malloc_done = true;
-    }
-    
+    malloc();
+    pointer_initialized();
+
+
     //initialize
     //init edge labels
     vectorToPointerEdge(gpu_edge_labels);
-   
+
     //init adj matrix mol0
     vectorToPointerMatrix(g0, gpu_g0);
     size_gpu_g0_row = g0.size();

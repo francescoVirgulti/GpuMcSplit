@@ -20,6 +20,53 @@ extern int edge_label_size;
 extern int max_initial_label_size ;
 extern bool state_initialized;
 
+
+//struct 
+typedef struct{
+    int g_size;
+    int h_size;
+    int row_ring_size;
+    int *col_ring_size;
+    int *g;
+    int *h;
+    int adj;
+    char label[4];
+    int **rings_g;
+}GpuLabelClass;
+
+
+typedef struct{
+    int first;
+    int second;
+}Pair;
+
+extern Pair *m_best_solution;
+
+
+typedef struct {
+    int labels_size;
+    int m_size;
+    GpuLabelClass *labels;
+    GpuLabelClass single_label;
+    int *idxList;
+    Pair *m_local;
+}ThreadVar;
+
+//auto is for autonomous
+
+extern ThreadVar **thread_pool_list;
+
+extern int *auto_pool_size;
+extern Pair **auto_pool_m_best;
+extern int *auto_pool_len_m_best;
+extern ThreadVar *auto_pool_tmp;
+
+extern vector<int> length_list;
+
+extern float *main_gpu_edge_labels;
+extern float **main_gpu_g0;
+extern float **main_gpu_g1;
+
 std::vector<std::vector<int> > gen_rings_classes(
      std::vector<std::string> l0,
      std::vector<std::string> l1,

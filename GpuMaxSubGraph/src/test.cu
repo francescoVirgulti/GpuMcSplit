@@ -24,14 +24,19 @@ bool state_initialized = true;
 
 
 //auto is for autonomous
-ThreadVar **thread_pool_list;
-
+ThreadVar **thread_pool_list; 
 int *auto_pool_size;
 Pair **auto_pool_m_best;
 int *auto_pool_len_m_best;
 ThreadVar *auto_pool_tmp;
 
 vector<int> length_list;
+
+Pair *m_best_solution;
+
+float *main_gpu_edge_labels;
+float **main_gpu_g0;
+float **main_gpu_g1;
 
 
 
@@ -42,13 +47,13 @@ int main()
     cudaMallocManaged(&pointer_tmp, sizeof(int) * 2);
 
     
-  string s0 = "CC(C)[C@@H]1CC[C@@H](C)C[C@H]1OC(=O)c2ccccc2c3c(C)cccc3CN(C)C4CCCCC4";
+    string s0 = "CC(C)[C@@H]1CC[C@@H](C)C[C@H]1OC(=O)c2ccccc2c3c(C)cccc3CN(C)C4CCCCC4";
     string s1 = "O=C(OC1CCCCC1)c2ccccc2c3ccccc3CNC4CCCCC4";
- ROMol result = smiles_mcs(s0, s1 );
- state_initialized = false;
+    ROMol result = smiles_mcs(s0, s1 );
+    state_initialized = false;
 
     clock_t start = clock();
-     result = smiles_mcs(s0, s1 );
+        result = smiles_mcs(s0, s1 );
     clock_t end = clock();
     
     
@@ -61,14 +66,15 @@ int main()
     }
 
 
-    cout << "[";
+    cout << "\n[";
     for ( int idx = 0; idx < result_string.size(); idx++ ){
         if(idx == result_string.size()-1 ){
             cout <<"'"<<result_string.at(idx)<<"']"<<endl;
         }
         else cout <<"'"<<result_string.at(idx)<<"', ";
     }
-    cout<<"done\n\n";
+
+    cout << endl;
 
      // Print the elapsed time in seconds
     std::cout << "\nElapsed time: " << elapsed_seconds << " seconds" << std::endl;

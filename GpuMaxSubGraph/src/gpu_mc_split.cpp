@@ -318,6 +318,7 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
     edge_labels = gen_bond_labels(g0, g1);
     int min = std::min(l0.size(), l1.size());
     std::vector<LabelClass> initial_label_classes = gen_initial_labels(l0, l1, ring_classes);
+    size_initial_label_classes = initial_label_classes.size();
 
     if(state_initialized){
         initialized(l00,l11,initial_label_classes);
@@ -326,7 +327,7 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
     } 
 
 
-    size_initial_label_classes = initial_label_classes.size();
+    
     
     Q.reserve(32*32);
     for(auto & x : Q) {
@@ -398,9 +399,9 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
                 }
 
                 
-                cout << "\nm_best_size after kernel : " << m_best.size() << endl;
+                cout << "\n\nm_best_size after kernel : " << m_best.size() << endl;
 
-                cout << "\n Q_cpu size : " << Q_cpu.size() << endl;
+                cout << "\nQ_cpu size : " << Q_cpu.size() << endl;
                 iterazione = 0;
                 if(Q_cpu.size() > 0 ){
                     do
