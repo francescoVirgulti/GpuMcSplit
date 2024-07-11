@@ -20,6 +20,7 @@ extern int edge_label_size;
 extern int max_initial_label_size ;
 extern bool state_initialized;
 
+extern bool malloc_done;
 
 //struct 
 typedef struct{

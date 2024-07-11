@@ -30,7 +30,7 @@ void pointer_initialized(){
 
 
 
-bool malloc_done = false;
+
 
 
 
@@ -409,12 +409,12 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 
     int max_legth_queue = 1;
 
-    //mi prendo il primo valore della coda 
+    /*  TEST
+    mi prendo il primo valore della coda 
     copy_single_ThreadVar(tmp , thread_pool[0] );
-
-  
-//   printf("\nautonomouslySolve globalIdx :  %d \nlabels_size : %d", globalIdx, tmp -> labels_size);  
-   //print_labels(tmp->labels, tmp->labels_size);
+    printf("\nautonomouslySolve globalIdx :  %d \nlabels_size : %d", globalIdx, tmp -> labels_size);  
+    print_labels(tmp->labels, tmp->labels_size);
+    */
 
     while(queue_size > 0) {
         
@@ -502,8 +502,12 @@ void malloc(){
 
     if(max_l0_size > max_l1_size) min_mol_size = max_l1_size;
     else  min_mol_size = max_l0_size;
-
+    
+    /*
+    cout << "size_edge_labels : " << size_edge_labels;
     cout << "min_mol_size : " << min_mol_size <<endl;
+    cout << "max_l0_size : " << max_l0_size <<endl;
+    */
 
     clock_t start = clock();                          
     //cuda Mallocs
@@ -661,8 +665,7 @@ void malloc(){
      // Calculate elapsed time in seconds
     double elapsed_seconds = (double)(end - start) / CLOCKS_PER_SEC;
     malloc_elapsed_seconds = elapsed_seconds;
-      // Print the elapsed time in seconds
-    std::cout << "\nMALLOC Elapsed time: " << elapsed_seconds << " seconds" << std::endl;
+
 
 }
 
@@ -673,16 +676,22 @@ void malloc(){
 
 void kernel( vector<queue_elem> Q_filter  ) {
 
+    cout << "Kernel START" << endl;
 
+    if(malloc_done == false){
+        malloc();
+        malloc_done = true;
+        cout << "Kernel END OF MALLOC" << endl;
+    }
 
-    malloc();
     pointer_initialized();
+  
 
 
     //initialize
     //init edge labels
     vectorToPointerEdge(gpu_edge_labels);
-
+    cout << "fino a qua ci arrivo" ;
     //init adj matrix mol0
     vectorToPointerMatrix(g0, gpu_g0);
     size_gpu_g0_row = g0.size();
