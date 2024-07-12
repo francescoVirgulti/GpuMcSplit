@@ -248,7 +248,7 @@ __device__ void device_resize(int *array, int size_arr, int place_availabel){
 __device__ int device_gen_new_labels(GpuLabelClass *l_draft ,  int v, int w, GpuLabelClass *lcs, int lcs_size, int *idxList) {
     int vs,ws, draft_size = 0;
     int dim_row;
-    int count = 0;
+    //int count = 0;
     for ( int i = 0 ; i < lcs_size ; ++i ){
       // printf("\ndevice_gen_new_labels iterazione num : %d", i );
         for ( int j = 0 ; j < size_edge_labels ; ++j ){
@@ -316,11 +316,12 @@ __device__ bool device_matchable(int **v_ring_atoms, int v, int w, GpuLabelClass
 
 // vtx_set: selected label class
 // g: selected graph
-__device__ void device_select_vertex(int *result, int *result_pos, int *vtx_set, int vtx_size, float **g, int num_row, int num_column) {
+__device__ int device_select_vertex(int result, int *result_pos, int *vtx_set, int vtx_size, float **g, int num_row, int num_column) {
     int max_deg = -1;
-    int vtx = 0;
-
+    
+    //printf("vtx_size %d  i:   %d    nr: %d   nc:  %d ", vtx_size, i, num_row, num_column);
     for(int i = 0; i < vtx_size; i++){
+       
         int deg = 0;
         for(int j = 0; j < num_column; j++){
             int consider = g[vtx_set[i]][j];
@@ -331,11 +332,11 @@ __device__ void device_select_vertex(int *result, int *result_pos, int *vtx_set,
 
         if(deg>max_deg){
             max_deg = deg;
-            *result = vtx_set[i];
+            result = vtx_set[i];
             *result_pos = i;
         }
     }
-    return ;
+    return result;
 }
 
 
@@ -434,14 +435,33 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 
         index = 0;
         flag = 0;
+        int v_real_size = label->g_size;
+        int w_real_size = label->h_size;
+        int v;
+        int w; 
+        int pos_v;
+        int pos_w;
+        int tmp;
+
         if((TMP.m_size + device_calc_bound(TMP.labels, TMP.labels_size) < m_best_size[m_best_size_index]) || !label) {flag = 1;}
 
         if( flag == 0 ){
             
             index = queue_size;
-            for( int v_idx = 0 ; v_idx < label->g_size ; ++v_idx){
-                for( int w_idx = 0 ; w_idx < label->h_size ; ++w_idx){
-                    if( !device_matchable(label->rings_g, label->g[v_idx], label->h[w_idx], label, TMP.idxList ) ) continue;
+            while( v_real_size > 0 ){
+                v = device_select_vertex(v , &pos_v, label->g, v_real_size, gpu_g0, size_gpu_g0_row, size_gpu_g0_col );
+                v_real_size = v_real_size -1;
+                tmp = label->g[v_real_size];
+                label->g[v_real_size] = label->g[pos_v];
+                label->g[pos_v] = tmp;
+                w_real_size = label->h_size;
+                while( w_real_size > 0 ){
+                    w = device_select_vertex(w , &pos_w, label->h, w_real_size, gpu_g1, size_gpu_g1_row, size_gpu_g1_col );
+                    w_real_size = w_real_size-1;
+                    tmp = label->h[w_real_size];
+                    label->h[w_real_size] = label->h[pos_w];
+                    label->h[pos_w] = tmp;
+                    if( !device_matchable(label->rings_g, v, w, label, TMP.idxList ) ) continue;
                     
 
                     for(z = 0; z < TMP.m_size; z ++){
@@ -449,13 +469,13 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
                         thread_pool[index].m_local[z].second = TMP.m_local[z].second;
                     } 
                     thread_pool[index].m_size = TMP.m_size +1;
-                    thread_pool[index].m_local[z].first = label->g[v_idx];
-                    thread_pool[index].m_local[z].second = label->h[v_idx];
+                    thread_pool[index].m_local[z].first = v;
+                    thread_pool[index].m_local[z].second =w;
                     
                     int l_s = device_gen_new_labels( 
                         thread_pool[index].labels, 
-                        label->g[v_idx], 
-                        label->h[w_idx] , 
+                        v, 
+                        w , 
                         TMP.labels,  
                         TMP.labels_size, 
                         TMP.idxList );
@@ -592,7 +612,7 @@ void malloc(){
     }
 
 
-    bool flag = false;
+    //bool flag = false;
     
     for (int f = 0; f <  Q_GPU_size ; f++) {
         int length = (min_mol_size) / 2  ;
@@ -691,7 +711,6 @@ void kernel( vector<queue_elem> Q_filter  ) {
     //initialize
     //init edge labels
     vectorToPointerEdge(gpu_edge_labels);
-    cout << "fino a qua ci arrivo" ;
     //init adj matrix mol0
     vectorToPointerMatrix(g0, gpu_g0);
     size_gpu_g0_row = g0.size();
@@ -720,7 +739,7 @@ void kernel( vector<queue_elem> Q_filter  ) {
     }
 
     
-    autonomouslySolve<<<32,32>>>(thread_pool_list, auto_pool_size ,auto_pool_len_m_best, auto_pool_m_best, auto_pool_tmp ,Q_filter.size());
+    autonomouslySolve<<<1,32>>>(thread_pool_list, auto_pool_size ,auto_pool_len_m_best, auto_pool_m_best, auto_pool_tmp ,Q_filter.size());
      // Attendi il completamento del kernel
     cudaDeviceSynchronize();
 

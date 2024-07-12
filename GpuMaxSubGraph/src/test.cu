@@ -1,7 +1,8 @@
 //
 // Created by davide on 4/19/24.
 //
-
+#include <rdkit/GraphMol/GraphMol.h>
+#include <GraphMol/SmilesParse/SmilesParse.h>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -49,8 +50,8 @@ int main()
 
       std::vector<std::pair<std::string, std::string>> molecules;
 
-        std::string filename = "input_file.txt";
-        std::string outputFilename = "output.txt";
+        std::string filename = "input.txt";
+        std::string outputFilename = "output_iterativo.txt";
         // Open the output file for writing
         std::ofstream outputFile(outputFilename);
         if (!outputFile) {
@@ -97,11 +98,14 @@ int main()
         cout << "molecules size : " << molecules.size() <<endl;
 
 
-    clock_t start = clock();
+        clock_t start = clock();
         for(pair mol_pair : molecules ){
             smiles_mcs(mol_pair.first, mol_pair.second);
         }
+        clock_t end = clock();
         state_initialized = false;
+         double elapsed_seconds = 0;
+
 
         std::vector<std::string> result_string;
         int index = 0;
@@ -109,7 +113,12 @@ int main()
             cout << "__________________________MOLECULES PAIR NUM : " << index << endl;
             index++;
             result.clear();
-            result = smiles_mcs(mol_pair.first, mol_pair.second);
+            RWMol mol0 = *SmilesToMol(mol_pair.first);
+            RWMol mol1 = *SmilesToMol(mol_pair.second); 
+            clock_t start = clock();
+            result = mol_mcs(mol0, mol1, 1,1,0);
+            clock_t end = clock();
+            elapsed_seconds = elapsed_seconds + (double)(end - start) / CLOCKS_PER_SEC;
             result_string.clear();
             for (const auto &atom : result.atoms()) {
                 result_string.push_back(atom->getSymbol());
@@ -123,7 +132,7 @@ int main()
                     else outputFile <<"'"<<result_string.at(idx)<<"', ";
                 }
         }
-    clock_t end = clock();
+
     
 
 
@@ -132,7 +141,7 @@ int main()
     
     
     // Calculate elapsed time in seconds
-    double elapsed_seconds = (double)(end - start) / CLOCKS_PER_SEC;
+    //double elapsed_seconds = (double)(end - start) / CLOCKS_PER_SEC;
 
     
 

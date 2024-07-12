@@ -204,12 +204,12 @@ bool solve_mcs() {
     if( !Q.empty() ){ return true; } return false;
 }
 
-bool solve_2() {
-        if(Q_cpu.empty()) return false;
+bool solve_2(vector<queue_elem>& Q_tmp) {
+        if(Q_tmp.empty()) return false;
         
-        queue_elem elem =  Q_cpu.back();
+        queue_elem elem =  Q_tmp.back();
         
-        Q_cpu.pop_back();
+        Q_tmp.pop_back();
 
         vector<LabelClass> lcs = elem.labels;
 
@@ -232,7 +232,7 @@ bool solve_2() {
         lcc = select_label(label_class_pointers, m_local.size());
 
 
-        if ( m_local.size() + calc_bound(lcs) <= m_best.size() || ( !lcc && !m_local.empty() )  ){ if( !Q_cpu.empty() ){ return true; } return false;}
+        if ( m_local.size() + calc_bound(lcs) <= m_best.size() || ( !lcc && !m_local.empty() )  ){ if( !Q_tmp.empty() ){ return true; } return false;}
 
         LabelClass lc = *lcc;
         vector<int> lcg = lc.g;
@@ -249,7 +249,7 @@ bool solve_2() {
                         m_local.push_back(m_temp);
                         qel.labels = genNewLabels(v,w,lcs);
                         qel.m_local = m_local;
-                        Q_cpu.push_back(qel);
+                        Q_tmp.push_back(qel);
                         if ( m_local.size() > m_best.size() ) m_best = m_local; 
                         m_local.pop_back();
                     }
@@ -261,7 +261,7 @@ bool solve_2() {
         }
     
 
-    if( !Q_cpu.empty() ){ return true; } return false;
+    if( !Q_tmp.empty() ){ return true; } return false;
 }
 
 
@@ -385,6 +385,8 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
         }
      }while(flag);
 
+     /*
+
       if(Q_gpu.size() > 0){
         vector<queue_elem> Q_tmp;
         for(int i = 0; i < Q_gpu.size(); i++){
@@ -397,9 +399,24 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
         cout << "\nm_best_size after kernel : " << m_best.size() << endl;
         Q_gpu.clear();               
     }
+*/
+    
+
+   if(Q_gpu.size() > 0) {
+        flag = true;
+        do
+        {
+            flag = solve_2(Q_gpu);
+        } while (flag);
+   }
+
 
     if(Q_cpu.size() > 0){
-        solve_2();
+        flag = true;
+        do
+        {
+            flag = solve_2(Q_cpu);
+        } while (flag);
     }
 
     vector<pair<int,int>> best = m_best;

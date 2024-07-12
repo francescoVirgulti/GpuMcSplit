@@ -45,7 +45,7 @@ class LabelClass {
                         posizione++;
                     }
                 }else{
-                    int posizione = 0;
+                   // int posizione = 0;
                 }
             }
 
