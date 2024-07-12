@@ -1,0 +1,5 @@
+/home/dvillani/GpuMcSplit/GpuMaxSubGraph/build/CMakeFiles/memcheck.dir
+/home/dvillani/GpuMcSplit/GpuMaxSubGraph/build/CMakeFiles/subgraph_search.dir
+/home/dvillani/GpuMcSplit/GpuMaxSubGraph/build/CMakeFiles/test.dir
+/home/dvillani/GpuMcSplit/GpuMaxSubGraph/build/CMakeFiles/edit_cache.dir
+/home/dvillani/GpuMcSplit/GpuMaxSubGraph/build/CMakeFiles/rebuild_cache.dir

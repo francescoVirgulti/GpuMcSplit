@@ -100,6 +100,7 @@ add_executable(test ${header_files} "${source_path}/test.cu"
         "${source_path}/pair_vertex.cpp"
         "${source_path}/kernel.cu"
         "${source_path}/initialized.cpp"
+        "${source_path}/mcs_iterative.cpp"
 )
 set_target_properties(test PROPERTIES
     COMPILE_DEFINITIONS "TESTING"

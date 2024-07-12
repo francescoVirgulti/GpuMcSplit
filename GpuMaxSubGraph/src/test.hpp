@@ -113,3 +113,7 @@ RDKit::ROMol g2mol( std::vector<std::string>& labels,  std::vector<std::vector<f
 ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match=1, int ring_match=1, int return_map=0) ;
 
 void initialized(const std::vector<std::string>& l00 ,const std::vector<std::string>& l11 , std::vector<LabelClass> initial_label_classes);
+
+vector<pair<int,int>> mcs_iterative(const std::vector<std::vector<float>>& g00, const std::vector<std::vector<float>>& g11,
+                                          const std::vector<std::string>& l0, const std::vector<std::string>& l1,
+                                          std::vector<std::vector<int> >& ring_classes);

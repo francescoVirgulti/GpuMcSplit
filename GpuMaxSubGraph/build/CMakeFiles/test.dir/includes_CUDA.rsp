@@ -1,0 +1,1 @@
+-I/opt/install/rdkit/2023.03.2_gcc_11.3/include/rdkit -I/home/dvillani/GpuMcSplit/GpuMaxSubGraph/subgraph_search -I/home/dvillani/GpuMcSplit/GpuMaxSubGraph/PUBLIC -I/home/dvillani/GpuMcSplit/GpuMaxSubGraph/test

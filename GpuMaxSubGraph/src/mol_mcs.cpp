@@ -126,6 +126,7 @@ ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match
 
     //std::vector<std::pair<int, int>> mapping = mc_split(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
     std::vector<std::pair<int, int>> mapping = gpu_mc_split(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
+    // std::vector<std::pair<int, int>> mapping = mcs_iterative(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
     //cout<< "INCUMBENT \n[";
     /*for ( std::pair<int,int> p : mapping) {
         cout<< "["<< p.first << ", "<< p.second << "]";

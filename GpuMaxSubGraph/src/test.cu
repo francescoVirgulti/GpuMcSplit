@@ -51,7 +51,7 @@ int main()
       std::vector<std::pair<std::string, std::string>> molecules;
 
         std::string filename = "input.txt";
-        std::string outputFilename = "output_iterativo.txt";
+        std::string outputFilename = "output.txt";
         // Open the output file for writing
         std::ofstream outputFile(outputFilename);
         if (!outputFile) {
@@ -104,7 +104,7 @@ int main()
         }
         clock_t end = clock();
         state_initialized = false;
-         double elapsed_seconds = 0;
+         double elapsed_seconds = (double)(end - start) / CLOCKS_PER_SEC;
 
 
         std::vector<std::string> result_string;
