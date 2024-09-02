@@ -70,9 +70,8 @@ void sortLabels(std::vector<LabelClass>& labels){
 }
 
 
-
-
 LabelClass *select_label(std::vector<LabelClass*>& label_classes, int map_size);
+
 
 bool matchable( int v, int w, LabelClass lc ) {
     std::vector<int> vector;

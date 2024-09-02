@@ -14,39 +14,38 @@ vector<vector<float>> getAdjacencyMatrix(const RWMol& mol) {
     int numAtoms = mol.getNumAtoms();
     vector adjacencyMatrix(numAtoms, vector<float>(numAtoms, 0.0));
 
-    // Iterare su tutti i legami nella molecola e aggiornare la matrice di adiacenza con il peso dei legami
-    // Iterare su tutti i legami nella molecola e aggiornare la matrice di adiacenza con il peso dei legami
+    // Iterate over all the bonds in the molecule and update the adjacency matrix with the bond weights
     for (const Bond *bond : mol.bonds()) {
         const Atom *beginAtom = bond->getBeginAtom();
         const Atom *endAtom = bond->getEndAtom();
         Bond::BondType bondType = bond->getBondType();
 
-        // Ottenere gli indici degli atomi connessi
+        // Obtain the indices of the connected atoms
         int beginAtomIdx = beginAtom->getIdx();
         int endAtomIdx = endAtom->getIdx();
 
-        // Impostare il peso del legame in base al tipo di legame
-        float bondWeight = 1.0; // Peso predefinito per il legame singolo
+        // Set the bond weight based on the type of bond
+        float bondWeight = 1.0; // Default weight for a single bond
         if (bondType == Bond::DOUBLE) {
             bondWeight = 2.0;
         } else if (bondType == Bond::TRIPLE) {
             bondWeight = 3.0;
         } else if (bondType == Bond::AROMATIC) {
-            bondWeight = 1.5; // Peso per legame aromatico
+            bondWeight = 1.5; // Weight for an aromatic bond
         }
         else if (bondType == Bond::QUADRUPLE) {
-            bondWeight = 4.0; // Peso per legame aromatico
+            bondWeight = 4.0; // Weight for an aromatic bond
         }
         else if (bondType == Bond::QUINTUPLE) {
-            bondWeight = 5.0; // Peso per legame aromatico
+            bondWeight = 5.0; // Weight for an aromatic bond
         }
         else if (bondType == Bond::HEXTUPLE) {
-            bondWeight = 6.0; // Peso per legame aromatico
+            bondWeight = 6.0; // Weight for an aromatic bond
         }
 
-        // Aggiornare la matrice di adiacenza
+        // Update matrix
         adjacencyMatrix[beginAtomIdx][endAtomIdx] = bondWeight;
-        adjacencyMatrix[endAtomIdx][beginAtomIdx] = bondWeight; // Poiché la matrice di adiacenza è simmetrica per i grafi non orientati
+        adjacencyMatrix[endAtomIdx][beginAtomIdx] = bondWeight; // Since the adjacency matrix is symmetric for undirected graphs
     }
 
     return adjacencyMatrix;
@@ -54,7 +53,7 @@ vector<vector<float>> getAdjacencyMatrix(const RWMol& mol) {
 
 
 
-//ho cambiato la return di questa funzione per fini di test
+
 ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match, int ring_match, int return_map) {
     std::vector mols = {mol0, mol1};
 
@@ -122,19 +121,13 @@ ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match
 
 
     std::vector<std::vector<int>> ring_classes = gen_ring_classes(mol0, mol1);
-
-
-    //std::vector<std::pair<int, int>> mapping = mc_split(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
-    std::vector<std::pair<int, int>> mapping = gpu_mc_split(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
-    // std::vector<std::pair<int, int>> mapping = mcs_iterative(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
-    //cout<< "INCUMBENT \n[";
-    /*for ( std::pair<int,int> p : mapping) {
-        cout<< "["<< p.first << ", "<< p.second << "]";
-    }
-    cout<< "]"<<endl;*/
+    std::vector<std::pair<int, int>> mapping;
+    if(algorithm_used == 1) mapping = mc_split(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
+    else if (algorithm_used == 2) mapping = mcs_iterative(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
+    else if (algorithm_used == 3) mapping = gpu_mc_split(g0, g1, label_ring_data.first, label_ring_data.second, ring_classes);
+    
 
     std::sort(mapping.begin(), mapping.end());
-
     std::vector<int> mapped_atom_idxs_g0;
     mapped_atom_idxs_g0.reserve(mapping.size());
     for (const auto &pair : mapping) {
@@ -158,11 +151,6 @@ ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match
     }
 
     ROMol mcs = g2mol(mcs_labels, mcs_matrix);
-
-    /*if (return_map) {
-         //return incumbent;
-    }*/
-
     return mcs;
 
 

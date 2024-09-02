@@ -1,3 +1,9 @@
+ -- COMPILE
 cmake -S ./ -B ./build
+cmake --build ./build -j
+
+--LOAD LIBRARY
 module load cuda/11.7 cmake/3.27 gcc/11.3.0 boost/1.85.0_gcc_11.3 rdkit/2023.03.2_gcc_11.3
+
+--RESTORE GIT REPOSITORY
 git restore --staged . && git restore . && git clean -fd

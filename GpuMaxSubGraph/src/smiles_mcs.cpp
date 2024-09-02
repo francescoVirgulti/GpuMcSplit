@@ -12,4 +12,3 @@ ROMol smiles_mcs( std::string& smile0,  std::string& smile1, int bond_match , in
 
     return mol_mcs(mol0, mol1, 1,1,0);
 }
-//['/home/davide/miniconda3/envs/my-rdkit-env/lib/python3.12/site-packages/rdkit']

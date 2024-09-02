@@ -11,6 +11,8 @@
 using namespace std;
 using namespace RDKit;
 
+extern int algorithm_used;
+
 extern double malloc_elapsed_seconds;
 extern int max_l0_size ;
 extern int max_l1_size ; 
