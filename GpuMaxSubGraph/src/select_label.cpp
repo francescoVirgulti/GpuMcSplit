@@ -1,5 +1,5 @@
 #include <vector>
-#include "test.hpp"
+#include "main.hpp"
 
 LabelClass *select_label(std::vector<LabelClass*>& label_classes, int map_size) {
 

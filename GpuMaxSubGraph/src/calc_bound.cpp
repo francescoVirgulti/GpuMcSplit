@@ -1,6 +1,6 @@
 #include <vector>
 #include <algorithm> // for std::min
-#include "test.hpp"
+#include "main.hpp"
 
 int calc_bound( std::vector<LabelClass> label_classes) {
   int bound = 0;

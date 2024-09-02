@@ -18,19 +18,12 @@ double malloc_elapsed_seconds;
 
 
 
-
+// Initializes GPU pointer variables with corresponding main GPU pointers.
 void pointer_initialized(){
     gpu_edge_labels = main_gpu_edge_labels;
     gpu_g0 = main_gpu_g0;
     gpu_g1 = main_gpu_g1;
 }
-
-
-
-
-
-
-
 
 
 
@@ -63,7 +56,7 @@ __device__ void copyIntMatrix(int **a, int **b, int rowsize, int *colsize )
 }
 
 
-
+// Copies the contents of one GpuLabelClass object to another on the GPU, including arrays and matrix data.
 __device__ void cpyGpuLabelClass(GpuLabelClass *l1, GpuLabelClass l2){
     l1->adj = l2.adj;
     l1->row_ring_size = l2.row_ring_size;
@@ -72,13 +65,13 @@ __device__ void cpyGpuLabelClass(GpuLabelClass *l1, GpuLabelClass l2){
     for(int i = 0; i < 4 ; i++) {
         l1->label[i] = l2.label[i];
     }
-    //strcpy(l1->label , l2.label);
     copyIntArray( l1->g , l2.g, l2.g_size);
     copyIntArray( l1->h, l2.h, l2.h_size);
     copyIntArray( l1->col_ring_size, l2.col_ring_size , l2.row_ring_size);
     copyIntMatrix( l1->rings_g, l2.rings_g, l2.row_ring_size, l2.col_ring_size );/**/
 }
 
+// Copies data from a vector of edge labels to a float pointer array, or sets the pointer to nullptr if the vector is empty.
 void vectorToPointerEdge(float *gpu_edge_labels){
     if(edge_labels.size() == 0){
         gpu_edge_labels = nullptr;
@@ -92,6 +85,8 @@ void vectorToPointerEdge(float *gpu_edge_labels){
 
     return;
 }
+
+// Converts a 2D vector to a 2D pointer matrix, copying data from the vector to the allocated matrix.
 void vectorToPointerMatrix(const std::vector<std::vector<float>>& g,float** gpu_g) {
     // Get dimensions of the vector
     int numRows = g.size();
@@ -110,6 +105,7 @@ void vectorToPointerMatrix(const std::vector<std::vector<float>>& g,float** gpu_
     }
 }
 
+// Converts data from a vector of LabelClass objects (CPU) to an array of GpuLabelClass objects (GPU).
 void LabelFromCpuToGpu(GpuLabelClass *new_label, const vector<LabelClass>& old_label ){
 
     for (int idx = 0 ; idx < old_label.size() ; ++idx ){
@@ -340,9 +336,6 @@ __device__ int device_select_vertex(int result, int *result_pos, int *vtx_set, i
 }
 
 
-
-
-
 //copy var1 in var2
 __device__ void copy_single_ThreadVar(ThreadVar *var2, ThreadVar var1){
 
@@ -373,7 +366,6 @@ __device__ void copy_single_ThreadVar(ThreadVar *var2, ThreadVar var1){
         var2->m_local[i].second =  var1.m_local[i].second;
     }
 }
-
 
 
 __device__ void print_labels(GpuLabelClass *labels, int labels_size){
@@ -410,12 +402,6 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 
     int max_legth_queue = 1;
 
-    /*  TEST
-    mi prendo il primo valore della coda 
-    copy_single_ThreadVar(tmp , thread_pool[0] );
-    printf("\nautonomouslySolve globalIdx :  %d \nlabels_size : %d", globalIdx, tmp -> labels_size);  
-    print_labels(tmp->labels, tmp->labels_size);
-    */
 
     while(queue_size > 0) {
         
@@ -696,12 +682,12 @@ void malloc(){
 
 void kernel( vector<queue_elem> Q_filter  ) {
 
-    cout << "Kernel START" << endl;
+    //cout << "Kernel START" << endl;
 
     if(malloc_done == false){
         malloc();
         malloc_done = true;
-        cout << "Kernel END OF MALLOC" << endl;
+    //    cout << "Kernel END OF MALLOC" << endl;
     }
 
     pointer_initialized();
@@ -740,7 +726,7 @@ void kernel( vector<queue_elem> Q_filter  ) {
 
     
     autonomouslySolve<<<1,32>>>(thread_pool_list, auto_pool_size ,auto_pool_len_m_best, auto_pool_m_best, auto_pool_tmp ,Q_filter.size());
-     // Attendi il completamento del kernel
+    // Synchronize threads
     cudaDeviceSynchronize();
 
     

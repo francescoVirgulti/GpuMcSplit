@@ -1,7 +1,7 @@
 #include <rdkit/GraphMol/GraphMol.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <RDGeneral/test.h>
-#include "test.hpp"
+#include "main.hpp"
 using namespace RDKit;
 
 

@@ -203,6 +203,7 @@ bool solve_mcs() {
     if( !Q.empty() ){ return true; } return false;
 }
 
+// Functions identically to solve_mcs but operates with a different QUEUE ( Testing purpose )
 bool solve_2(vector<queue_elem>& Q_tmp) {
         if(Q_tmp.empty()) return false;
         
@@ -224,9 +225,6 @@ bool solve_2(vector<queue_elem>& Q_tmp) {
         int v,w;
         queue_elem qel;
         pair<int,int> m_temp;
-
-           
-
 
         lcc = select_label(label_class_pointers, m_local.size());
 
@@ -295,10 +293,8 @@ void filter_queue(vector<queue_elem> Q){
                         sortLabels(Q_gpu[i].labels);
                         Q_tmp.push_back(Q_gpu[i]);
                     }
-                    cout << "\nm_best_size before kernel : " << m_best.size() << endl;
                     cout << "\n-------> Kernel called with Q_gpu size : " << Q_tmp.size() << endl;
                     kernel(Q_tmp);
-                    cout << "\nm_best_size after kernel : " << m_best.size() << endl;
                     Q_gpu.clear();
                     return;
                 }    
@@ -383,22 +379,6 @@ vector<pair<int,int>> gpu_mc_split(const std::vector<std::vector<float>>& g00, c
             flag = solve_mcs();
         }
      }while(flag);
-
-     /*
-
-      if(Q_gpu.size() > 0){
-        vector<queue_elem> Q_tmp;
-        for(int i = 0; i < Q_gpu.size(); i++){
-            sortLabels(Q_gpu[i].labels);
-            Q_tmp.push_back(Q_gpu[i]);
-        }
-        cout << "\nm_best_size before kernel : " << m_best.size() << endl;
-        cout << "\n-------> Kernel called with Q_gpu size : " << Q_tmp.size() << endl;
-        kernel(Q_tmp);
-        cout << "\nm_best_size after kernel : " << m_best.size() << endl;
-        Q_gpu.clear();               
-    }
-*/
     
 
    if(Q_gpu.size() > 0) {

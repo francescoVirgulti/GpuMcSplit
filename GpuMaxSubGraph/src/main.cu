@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "test.hpp"
+#include "main.hpp"
 #include "cuda_header.h"
 #include <ctime>
 #include <chrono>  
@@ -33,6 +33,8 @@ ThreadVar *auto_pool_tmp;
 
 vector<int> length_list;
 Pair *m_best_solution;
+
+// These variables are used exclusively within the gpu_mcSplit function.
 float *main_gpu_edge_labels;
 float **main_gpu_g0;
 float **main_gpu_g1;
@@ -42,6 +44,7 @@ bool malloc_done = false;
 
 int main() {
 
+    // Default initialization time of the GPU (This time is not accounted for in measurements).
     int *pointer_tmp;
     cudaMallocManaged(&pointer_tmp, sizeof(int) * 2);
     std::vector<std::pair<std::string, std::string>> molecules;

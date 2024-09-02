@@ -40,7 +40,7 @@ find_program(VALGRIND_EXECUTABLE valgrind)
 if(VALGRIND_EXECUTABLE)
   set(MEMORYCHECK_COMMAND "${VALGRIND_EXECUTABLE}" "--leak-check=full" "--show-leak-kinds=all" "--track-origins=yes" "--verbose" "--log-file=valgrind.log")
   set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind.log")
-  add_custom_target(memcheck COMMAND ${MEMORYCHECK_COMMAND} $<TARGET_FILE:test>)
+  add_custom_target(memcheck COMMAND ${MEMORYCHECK_COMMAND} $<TARGET_FILE: main>)
 endif()
 
 # ########################################################################
@@ -68,19 +68,8 @@ list(APPEND source_files
 # ########################################################################
 
 # define the target and its properties
-add_executable(subgraph_search ${header_files} "${source_path}/main.cpp" ${source_files}
-        src/mc_split.cpp
-        src/mol_mcs.cpp
-        src/g2mol.cpp
-)
-set_target_properties(subgraph_search
-  PROPERTIES
-  CXX_STANDARD 17
-  CXX_STANDARD_REQUIRED ON
-  CXX_EXTENSIONS OFF
-)
 
-add_executable(test ${header_files} "${source_path}/test.cu"
+add_executable(main ${header_files} "${source_path}/main.cu"
         "${source_path}/gen_bond_labels.cpp"
         "${source_path}/gen_rotations.cpp"
         "${source_path}/select_vertex.cpp"
@@ -102,7 +91,7 @@ add_executable(test ${header_files} "${source_path}/test.cu"
         "${source_path}/initialized.cpp"
         "${source_path}/mcs_iterative.cpp"
 )
-set_target_properties(test PROPERTIES
+set_target_properties(main PROPERTIES
     COMPILE_DEFINITIONS "TESTING"
         CXX_STANDARD 17
         CXX_STANDARD_REQUIRED ON
@@ -115,9 +104,7 @@ set_target_properties(test PROPERTIES
 include(CheckIPOSupported)
 check_ipo_supported(RESULT ipo_supported)
 
-if(ipo_supported)
-  set_property(TARGET subgraph_search PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif()
+
 
 # since RDKit doesn't handle the dependencies in a correct way, we need to improvise
 # NOTE: by using this way of importing RDKit, we need to manually include its dependencies
@@ -138,20 +125,11 @@ get_target_property(RDKIT_LIB_FULLPATH RDKit::RDGeneral LOCATION)
 get_filename_component(RDKIT_LIB_DIRPATH "${RDKIT_LIB_FULLPATH}" DIRECTORY)
 cmake_path(GET RDKIT_LIB_DIRPATH PARENT_PATH RDKIT_INSTALL_PREFIX)
 include_directories(${RDKit_INCLUDE_DIRS}) #modified
-include_directories(subgraph_search PUBLIC "${RDKIT_INSTALL_PREFIX}/include/rdkit")
-target_link_directories(subgraph_search PUBLIC "${RDKIT_INSTALL_PREFIX}/lib")
-target_link_directories(subgraph_search PUBLIC "${RDKIT_INSTALL_PREFIX}/lib64")
-target_link_libraries(subgraph_search PUBLIC
-        -lRDKitFileParsers
-        -lRDKitGraphMol
-        -lRDKitRDGeneral
-        -lRDKitSmilesParse
-        -lRDKitSubstructMatch
-)
-include_directories(test PUBLIC "${RDKIT_INSTALL_PREFIX}/include/rdkit")
-target_link_directories(test PUBLIC "${RDKIT_INSTALL_PREFIX}/lib")
-target_link_directories(test PUBLIC "${RDKIT_INSTALL_PREFIX}/lib64")
-target_link_libraries(test PUBLIC
+
+include_directories(main PUBLIC "${RDKIT_INSTALL_PREFIX}/include/rdkit")
+target_link_directories(main PUBLIC "${RDKIT_INSTALL_PREFIX}/lib")
+target_link_directories(main PUBLIC "${RDKIT_INSTALL_PREFIX}/lib64")
+target_link_libraries(main PUBLIC
         -lRDKitFileParsers
         -lRDKitGraphMol
         -lRDKitRDGeneral

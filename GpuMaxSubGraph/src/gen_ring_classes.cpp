@@ -1,7 +1,6 @@
 #include <vector>
 #include <string>
-#include "test.hpp" // Include your header file where gen_rotations function is declared
-
+#include "main.hpp"
 std::vector<std::vector<int>> gen_ring_classes(const RDKit::RWMol& mol0, const RDKit::RWMol& mol1) {
     
     std::vector<std::string> l0, l1;
