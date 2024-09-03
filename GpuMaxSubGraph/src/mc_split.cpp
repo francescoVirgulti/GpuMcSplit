@@ -45,7 +45,12 @@ bool matchablee( int v, int w, LabelClass lc ) {
     return true;
 }
 
-
+/*
+# g0, g1:           graphs
+# label_classes:    list of current label classes
+# edge_labels:      list of all edge labels common to both graphs
+# m:                current mapping of vertices being explored
+*/
 void search_mcs(std::vector<std::vector<float> > g0, std::vector<std::vector<float> > g1,
     std::vector<LabelClass>& label_classes, std::vector<float> edge_labels,
     const std::vector<std::pair<int, int> >& m){
@@ -174,7 +179,10 @@ std::vector<std::pair<int, int>> getIncumbent(){
 
 
 
-
+/*
+# g0, g1:   adjacency matrices of the two graphs
+# l0, l1:   list of labels (atom types and ring data) of the two graphs
+*/
 std::vector<std::pair<int, int>> mc_split(const std::vector<std::vector<float>> g0, const std::vector<std::vector<float>> g1,
                                           const std::vector<std::string>& l0, const std::vector<std::string>& l1,
                                           std::vector<std::vector<int> >& ring_classes) {

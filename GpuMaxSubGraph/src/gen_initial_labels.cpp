@@ -26,6 +26,13 @@ std::vector<std::string> find_common_strings(const std::vector<std::string>& l0,
        return result;
 }
 
+/*
+# l0:   list of all labels in graph 0
+# l1:   list of all labels in graph 1
+    # generates initial label classes based on the set of labels common to both graphs. Initially atoms are
+    # grouped only by atom type (if ring match option is enabled, atoms in rings will only be grouped with other atoms
+    # in rings of the same type)
+*/
 std::vector<LabelClass> gen_initial_labels(const std::vector<std::string>& l0, const std::vector<std::string>& l1,     std::vector<std::vector<int> >& ring_classes){
     std::vector<LabelClass> label_classes;
     const std::vector<string> common_labels = find_common_strings(l0,l1);

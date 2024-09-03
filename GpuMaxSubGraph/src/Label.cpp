@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
+// class used to represent two sets of nodes, from graphs g and h, which share the same label
 class LabelClass {
 
 
@@ -9,6 +10,7 @@ class LabelClass {
     public :     
     std::vector<int> g;
     std::vector<int> h;
+    // equals 1 if the label class is adjacent to the current mapping
     int adj;
     std::string label;
     std::vector<std::vector<int> > rings_g;
@@ -23,7 +25,7 @@ class LabelClass {
         };
 
     
-     // Remove method
+     // remove node and its ring data from label class, from specified graph
     void remove(int graph, int elem) {
        
         if (graph == 0) {
@@ -58,7 +60,7 @@ class LabelClass {
         }
     }
 
-     // Get ring match data method
+     // return vector with atoms as index and respective ring IDs as data
     std::vector<std::vector<int> > get_ring_match_data( std::vector<int>& elems) {
         std::vector<std::vector<int> > res = {};
         std::vector<int> idxList = {};

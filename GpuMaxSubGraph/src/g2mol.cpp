@@ -1,7 +1,7 @@
 //
 // Created by davide on 4/24/24.
 //
-#include "test.hpp"
+#include "main.hpp"
 #include <RDGeneral/test.h>
 
 // Function to convert a graph (adjacency matrix and labels) to an RDKit molecule

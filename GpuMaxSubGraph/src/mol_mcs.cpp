@@ -53,7 +53,12 @@ vector<vector<float>> getAdjacencyMatrix(const RWMol& mol) {
 
 
 
-
+/*
+# mol0, mol1:   two molecules involved in the substructure search
+# bond_match:   if set to 1 will match bond types in substructure
+# ring_match:   if set to 1 will only map atoms in rings to other atoms in rings
+# return_map:   for debugging purposes, returns a list of pairs of atom indices (atom_idx_g0 maps to atom_idx_g1)
+*/
 ROMol mol_mcs(const RDKit::RWMol &mol0, const RDKit::RWMol &mol1, int bond_match, int ring_match, int return_map) {
     std::vector mols = {mol0, mol1};
 

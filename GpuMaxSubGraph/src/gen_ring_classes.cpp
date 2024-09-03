@@ -1,6 +1,11 @@
 #include <vector>
 #include <string>
 #include "main.hpp"
+/*
+# A ring class is a set of equivalent rings. Two rings are part of the same class if they share the same size and the
+# same atom order. Ring equivalence classes are represented here as two arrays, one per molecule,
+# containing nothing if the atom is not part of a ring,
+*/
 std::vector<std::vector<int>> gen_ring_classes(const RDKit::RWMol& mol0, const RDKit::RWMol& mol1) {
     
     std::vector<std::string> l0, l1;
@@ -10,7 +15,7 @@ std::vector<std::vector<int>> gen_ring_classes(const RDKit::RWMol& mol0, const R
     for (const auto& atom : mol1.atoms()) {
         l1.push_back(atom->getSymbol());
     }
-
+    // AtomRings() returns a list of rings from the molecule containing the indexes of atom members
     std::vector<std::vector<int>> ring_info_m0, ring_info_m1;
     ring_info_m0 = mol0.getRingInfo()->atomRings();
 
@@ -20,6 +25,8 @@ std::vector<std::vector<int>> gen_ring_classes(const RDKit::RWMol& mol0, const R
 
     std::vector<std::vector<int> >ring_comp_m0; // Initialize with -1
     ring_comp_m0.resize(l0.size());
+    
+    // Iterate through rings to match them to their compatibility class, marking each atom as a member
     for ( std::vector<int> r : ring_info_m0 ) {
    
         if( !r.empty() ) {

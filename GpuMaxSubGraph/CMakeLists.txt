@@ -51,7 +51,6 @@ endif()
 set(header_path "${CMAKE_CURRENT_SOURCE_DIR}/src")
 list(APPEND header_files
   "${header_path}/main.hpp"
-  "${header_path}/test.hpp"
   "${header_path}/cuda_header.h"
   "${header_path}/gpu_header.hpp"
 )

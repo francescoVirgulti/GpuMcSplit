@@ -1,6 +1,10 @@
 #include <vector>
 #include <algorithm> // for std::sort, std::unique
-
+/*
+# g0:   graph 0
+# g1:   graph 1
+  # generates bond labels based on the set of bonds common to both graphs.
+*/
 std::vector<float> gen_bond_labels(const std::vector<std::vector<float> >& g0, const std::vector<std::vector<float> >& g1) {
   
   std::vector<float> all_labels;

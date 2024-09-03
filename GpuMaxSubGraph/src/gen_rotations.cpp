@@ -1,6 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
+/*
+# generates all possible rotations of a string. Used to find all axes of symmetry in a ring.
+# Returns a list with all rotations and respective rotation amounts
+*/
+
 std::vector<std::pair<std::string, int> > gen_rotations(const std::string& s);
 
 std::vector<std::pair<std::string, int> > gen_rotations(const std::string& s) {
