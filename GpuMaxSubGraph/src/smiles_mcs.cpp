@@ -4,7 +4,7 @@
 #include "main.hpp"
 using namespace RDKit;
 
-
+//translates the SMILES into Mol and call the main function to compute MCS
 ROMol smiles_mcs( std::string& smile0,  std::string& smile1, int bond_match , int ring_match ) {
 
     RWMol mol0 = *SmilesToMol(smile0);

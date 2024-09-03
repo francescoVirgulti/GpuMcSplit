@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <chrono>  // Include la libreria chrono
 
+//MCS ITERATIVE ALGORITHM 
+
 using namespace std;
     std::vector<std::vector<float>> gg0;
     std::vector<std::vector<float>> gg1;

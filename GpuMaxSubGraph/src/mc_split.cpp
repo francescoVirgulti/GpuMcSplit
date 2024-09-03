@@ -2,6 +2,9 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+
+//MCS RECURSIVE ALGORITHM
+
 std::vector<std::pair<int, int>> incumbent;
 
 LabelClass *select_label(std::vector<LabelClass*>& label_classes, int map_size);

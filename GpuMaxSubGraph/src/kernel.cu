@@ -25,25 +25,12 @@ void pointer_initialized(){
     gpu_g1 = main_gpu_g1;
 }
 
-
-
-void printLabelClass(GpuLabelClass lb) {
-        cout<< lb.label << " [ ";
-        cout<< " G("<< lb.g_size << "): ";
-        if(!lb.g_size == 0) {for ( int i = 0 ; i < lb.g_size; i++ ) cout<<"["<<lb.g[i]<<"]";}
-        cout<< " H("<< lb.h_size << "): ";
-        if(!lb.h_size == 0 ) {for ( int i = 0; i <  lb.h_size; i++ ) cout<<"["<<lb.h[i]<<"]";}
-        cout<< " RINGS("<< lb.row_ring_size << "): [";
-        for( int i = 0; i< lb.row_ring_size; i++){cout<<"("<<lb.col_ring_size[i]<<")"<<"["; for( int j = 0; j <  lb.col_ring_size[i]; j++) cout<<lb.rings_g[i][j]<<", ";  cout<<" ]";}
-        cout<<"]";
-        cout<< " edge : " <<lb.adj<<" " ;
-        cout<< lb.label << " ] "<<endl;
-}   
 __device__ void copyIntArray(int *a, int *b, int sizeb){
     for ( int i = 0 ; i < sizeb ; i++){
         a[i] = b[i];
     }
 }
+
 __device__ void copyIntMatrix(int **a, int **b, int rowsize, int *colsize )
 {
 
@@ -54,7 +41,6 @@ __device__ void copyIntMatrix(int **a, int **b, int rowsize, int *colsize )
     }
 
 }
-
 
 // Copies the contents of one GpuLabelClass object to another on the GPU, including arrays and matrix data.
 __device__ void cpyGpuLabelClass(GpuLabelClass *l1, GpuLabelClass l2){
@@ -131,9 +117,6 @@ void LabelFromCpuToGpu(GpuLabelClass *new_label, const vector<LabelClass>& old_l
     }
 }
 
-
-
-
 // vtx_set: selected label class
 // g: selected graph
 __device__ bool device_contains(int value, int *arr, int size) {
@@ -176,7 +159,6 @@ __device__ int device_get_ring_match_data(int *dim_col, int **result, int *idxLi
     return idx_list_size;
 }
 
-
 // return the best select label given an array of labels
 __device__ void device_select_label(GpuLabelClass *label , GpuLabelClass *lcs, int map_size, int lcs_size){
     int min = 999;
@@ -208,7 +190,6 @@ __device__ int device_calc_bound(GpuLabelClass *lcs, int lc_size) {
     return bound;
 }
 
-
 //return = size of the friends
 //friend is the OUTPUT
 __device__ int device_hoodG(int *friends,int vtx, float edge, float **g, int size_g) {
@@ -224,7 +205,6 @@ __device__ int device_hoodG(int *friends,int vtx, float edge, float **g, int siz
     return size;
 }
 
-
 // result == size of generated label
 // output is l_draft
 // input : v
@@ -239,7 +219,6 @@ __device__ void device_resize(int *array, int size_arr, int place_availabel){
         }
     }
 }
-
 
 __device__ int device_gen_new_labels(GpuLabelClass *l_draft ,  int v, int w, GpuLabelClass *lcs, int lcs_size, int *idxList) {
     int vs,ws, draft_size = 0;
@@ -293,7 +272,6 @@ __device__ int device_gen_new_labels(GpuLabelClass *l_draft ,  int v, int w, Gpu
     return draft_size;
 }
 
-
 //given two atoms from the same label, return true if they are matchable, false otherwise
 // based on how their rings matches
 __device__ bool device_matchable(int **v_ring_atoms, int v, int w, GpuLabelClass *lc, int *idxList) {
@@ -308,7 +286,6 @@ __device__ bool device_matchable(int **v_ring_atoms, int v, int w, GpuLabelClass
     }
     return true;
 }
-
 
 // vtx_set: selected label class
 // g: selected graph
@@ -334,7 +311,6 @@ __device__ int device_select_vertex(int result, int *result_pos, int *vtx_set, i
     }
     return result;
 }
-
 
 //copy var1 in var2
 __device__ void copy_single_ThreadVar(ThreadVar *var2, ThreadVar var1){
@@ -364,21 +340,6 @@ __device__ void copy_single_ThreadVar(ThreadVar *var2, ThreadVar var1){
     for(int i = 0; i < var1.m_size; i++) {
         var2->m_local[i].first =  var1.m_local[i].first;
         var2->m_local[i].second =  var1.m_local[i].second;
-    }
-}
-
-
-__device__ void print_labels(GpuLabelClass *labels, int labels_size){
-    for(int i = 0; i < labels_size; i++){
-        printf("\nLabel : ");
-        for(int j = 0; j < 4; j++){
-            printf("%c ", labels[i].label[j] );
-        }
-        printf("\n");
-
-
-        printf("\ng_size : %d    h_size : %d", labels[i].g_size, labels[i].h_size );
-
     }
 }
 
@@ -489,9 +450,6 @@ __global__ void autonomouslySolve(ThreadVar **thread_pool_list, int *queue_size_
 
    return ;
 }
-
-
-
 
 void checkError(int iterazione, int line, cudaError_t r) {
     if (r != cudaSuccess) {
@@ -674,11 +632,6 @@ void malloc(){
 
 
 }
-
-
-
-
-
 
 void kernel( vector<queue_elem> Q_filter  ) {
 
